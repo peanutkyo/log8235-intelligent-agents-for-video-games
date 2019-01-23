@@ -1,0 +1,3 @@
+C:\Users\bfillion\Documents\softdesigntraining\Source\SoftDesignTraining\SoftDesignTraining.Build.cs
+C:\Users\bfillion\Documents\softdesigntraining\Source\SoftDesignTraining.Target.cs
+C:\Users\bfillion\Documents\softdesigntraining\Source\SoftDesignTrainingEditor.Target.cs

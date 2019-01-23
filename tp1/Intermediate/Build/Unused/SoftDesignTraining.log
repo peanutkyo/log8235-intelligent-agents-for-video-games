@@ -1,0 +1,50 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\VC\VCTargets\Microsoft.Cpp.props(31,3): warning MSB4011: "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\VC\VCTargets\Microsoft.Makefile.props" cannot be imported again. It was already imported at "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.cpp.props (31,3)". This is most likely a build authoring error. This subsequent import will be ignored. [C:\Users\bfillion\Documents\softdesigntraining\Intermediate\ProjectFiles\SoftDesignTraining.vcxproj]
+  Using 'git status' to determine working set for adaptive non-unity build.
+  Creating makefile for SoftDesignTrainingEditor (no existing makefile)
+  While compiling C:\Users\bfillion\Documents\softdesigntraining\Intermediate\Build\BuildRules\SoftDesignTrainingModuleRules.dll:
+EXEC : warning : c:\Users\bfillion\Documents\softdesigntraining\Source\SoftDesignTraining\SoftDesignTraining.Build.cs(7,9) : warning CS0618: 'UnrealBuildTool.ModuleRules.ModuleRules()' is obsolete: 'Please change your module constructor to take a ReadOnlyTargetRules parameter, and pass it to the base class constructor (eg. "MyModuleRules(ReadOnlyTargetRules Target) : base(Target)").'
+EXEC : warning : C:\Users\bfillion\Documents\softdesigntraining\Source\SoftDesignTraining\SoftDesignTraining.Build.cs: warning: Module constructors should take a ReadOnlyTargetRules argument (rather than a TargetInfo argument) and pass it to the base class constructor from 4.15 onwards. Please update the method signature.
+  Performing full C++ include scan (no include cache file)
+  Parsing headers for SoftDesignTrainingEditor
+    Running UnrealHeaderTool "C:\Users\bfillion\Documents\softdesigntraining\SoftDesignTraining.uproject" "C:\Users\bfillion\Documents\softdesigntraining\Intermediate\Build\Win64\SoftDesignTrainingEditor\Development\SoftDesignTrainingEditor.uhtmanifest" -LogCmds="loginit warning, logexit warning, logdatabase error" -Unattended -WarningsAsErrors -installed
+  Reflection code generated for SoftDesignTrainingEditor in 10.7596706 seconds
+  [1/20] Resource PCLaunch.rc
+  [2/20] Resource ModuleVersionResource.rc.inl
+  PCH.SoftDesignTraining.cpp
+  [4/20] Compile SoftDesignTrainingPlayerController.cpp
+  [5/20] Compile SoftDesignTrainingGameMode.gen.cpp
+  [6/20] Compile SoftDesignTrainingCharacter.gen.cpp
+  [7/20] Compile SoftDesignTraining.init.gen.cpp
+  [8/20] Compile SDTCollectible.gen.cpp
+  [9/20] Compile SDTAIController.gen.cpp
+  [10/20] Compile SoftDesignTrainingMainCharacter.gen.cpp
+  [11/20] Compile SoftDesignTrainingMainCharacter.cpp
+  [12/20] Compile SoftDesignTrainingCharacter.cpp
+  [13/20] Compile SoftDesignTraining.cpp
+  [14/20] Compile SDTUtils.cpp
+  [15/20] Compile SDTCollectible.cpp
+  [16/20] Compile SDTAIController.cpp
+  [17/20] Compile SoftDesignTrainingGameMode.cpp
+  [18/20] Compile SoftDesignTrainingPlayerController.gen.cpp
+  SoftDesignTraining.init.gen.cpp
+  SoftDesignTrainingCharacter.gen.cpp
+  SDTCollectible.gen.cpp
+  SoftDesignTrainingPlayerController.cpp
+  SoftDesignTrainingGameMode.gen.cpp
+  SoftDesignTrainingMainCharacter.gen.cpp
+  SDTAIController.gen.cpp
+  SoftDesignTraining.cpp
+  SoftDesignTrainingMainCharacter.cpp
+  SDTUtils.cpp
+  SoftDesignTrainingCharacter.cpp
+  SDTCollectible.cpp
+  SoftDesignTrainingPlayerController.gen.cpp
+  SoftDesignTrainingGameMode.cpp
+  SDTAIController.cpp
+  [19/20] Link UE4Editor-SoftDesignTraining.dll
+  [20/20] Link UE4Editor-SoftDesignTraining.lib
+     Creating library C:\Users\bfillion\Documents\softdesigntraining\Intermediate\Build\Win64\UE4Editor\Development\UE4Editor-SoftDesignTraining.lib and object C:\Users\bfillion\Documents\softdesigntraining\Intermediate\Build\Win64\UE4Editor\Development\UE4Editor-SoftDesignTraining.exp
+     Creating library C:\Users\bfillion\Documents\softdesigntraining\Intermediate\Build\Win64\UE4Editor\Development\UE4Editor-SoftDesignTraining.suppressed.lib and object C:\Users\bfillion\Documents\softdesigntraining\Intermediate\Build\Win64\UE4Editor\Development\UE4Editor-SoftDesignTraining.suppressed.exp
+  -------- End Detailed Actions Stats -----------------------------------------------------------
+  Deploying SoftDesignTrainingEditor Win64 Development...
+  Total build time: 34.81 seconds (SNDBS executor: 18.88 seconds)
