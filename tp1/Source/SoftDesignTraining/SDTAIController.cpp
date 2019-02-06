@@ -5,24 +5,82 @@
 #include "DrawDebugHelpers.h"
 #include "PhysicsHelpers.h"
 #include "SDTCollectible.h"
+#include "Engine.h"
+#include <chrono>
+#include <random>
 
 void ASDTAIController::Tick(float deltaTime)
 {
-	auto world = GetWorld();
-	auto physicsHelper = PhysicsHelpers(world);
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine generator(seed);
+	UWorld* world = GetWorld();
+	APawn* pawn = GetPawn();
 
-	DrawVisionCone(world, GetPawn(), GetPawn()->GetActorForwardVector(), m_visionAngle);
-	TArray<FOverlapResult> detectedItems = CollectTargetActorsInFrontOfCharacter(GetPawn(), physicsHelper);
+	// should be a serializefield kinda
+	const float distanceToObstacle = 200.f;
+	const float maxSpeed = 1.f;
+	const FVector acceleration = FVector(0.1f);
 
-	for (FOverlapResult item : detectedItems)
+	TArray<TEnumAsByte<EObjectTypeQuery>> TraceObjectTypes;
+	TraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
+	FHitResult losHit;
+	FCollisionQueryParams queryParams = FCollisionQueryParams();
+	queryParams.AddIgnoredActor(pawn);
+	bool isGonnaCollide = world->LineTraceSingleByObjectType
+	(
+		losHit,
+		pawn->GetActorLocation(),
+		pawn->GetActorLocation() + distanceToObstacle * pawn->GetActorForwardVector(),
+		TraceObjectTypes, queryParams
+	);
+
+	if (isGonnaCollide)
 	{
-		if(item.GetActor()->IsA(ASDTCollectible::StaticClass()))
-		{
-			FVector2D collectible = FVector2D(item.GetActor()->GetActorLocation());
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Salim est beau."));
 
-			MoveToTarget(collectible, m_maxSpeed, deltaTime);
-		}
+		// TODO: Switch randomly between four basic orientations ?
+		// TODO: Do it slowly.
+
+		FRotator rotator = FVector(0.f, 0.5f, 0.f).ToOrientationRotator();
+		//FRotator rotator = FVector(0.f, -0.5f, 0.f).ToOrientationRotator();
+		//FRotator rotator = FVector(0.f, -1.f, 0.f).ToOrientationRotator();
+		//FRotator rotator = FVector(0.f, 1.f, 0.f).ToOrientationRotator();
+		pawn->AddActorWorldRotation(rotator, true);
+
+		pawn->AddMovementInput(pawn->GetActorForwardVector(), maxSpeed, true);
+		//pawn->AddMovementInput(pawn->GetActorForwardVector(), m_currentSpeed.Size(), true);
 	}
+	else
+	{
+		IncreaseSpeed(acceleration, maxSpeed, deltaTime);
+		pawn->AddMovementInput(pawn->GetActorForwardVector(), maxSpeed, true);
+		//pawn->AddMovementInput(pawn->GetActorForwardVector(), m_currentSpeed.Size(), true);
+	}
+}
+
+FVector ASDTAIController::IncreaseSpeed(FVector acceleration, float maxSpeed, float deltaTime) 
+{
+	FVector newSpeed = m_currentSpeed + acceleration * deltaTime;
+
+	// need to debug the speed
+	if (newSpeed.Size() > maxSpeed) 
+	{
+		newSpeed.Normalize(); // vecteur unitaire
+		newSpeed *= maxSpeed;
+	}
+
+	return newSpeed;
+}
+
+FVector ASDTAIController::DecreaseSpeed(FVector acceleration, float maxSpeed, float deltaTime)
+{
+	FVector newSpeed = m_currentSpeed - acceleration * deltaTime;
+	if (newSpeed.Size() < m_currentSpeed.Size())
+	{
+		m_currentSpeed = FVector(0.1f);
+	}
+
+	return newSpeed;
 }
 
 bool ASDTAIController::MoveToTarget(FVector2D target, float targetSpeed, float deltaTime)
