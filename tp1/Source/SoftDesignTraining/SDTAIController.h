@@ -27,12 +27,16 @@ protected:
 	virtual void DrawVisionCone(UWorld* world, APawn* pawn, FVector const& dir, float angle) const;
 	virtual TArray<FOverlapResult> CollectTargetActorsInFrontOfCharacter(APawn const* pawn, PhysicsHelpers& physicHelper) const;
 
-	virtual FVector ASDTAIController::IncreaseSpeed(FVector acceleration, float maxSpeed, float deltaTime);
-	virtual FVector ASDTAIController::DecreaseSpeed(FVector acceleration, float maxSpeed, float deltaTime);
+	virtual void ASDTAIController::MoveForward(APawn* pawn, float acceleration, float maxSpeed);
+	virtual float ASDTAIController::IncreaseSpeed(float acceleration, float maxSpeed, float deltaTime);
+	virtual void ASDTAIController::RotateToDirection(APawn* pawn, FVector direction, float deltaTime);
 
 
 	FVector2D m_MovementInput;
 	float const m_maxSpeed = 500.0f;
 	float const m_visionAngle = PI / 3.0f;
-	FVector m_currentSpeed = FVector(0.1f);
+	float m_currentSpeed = 0.5f;
+
+	enum struct SDTAI_State { PURSUIT, FLEE };
+	SDTAI_State m_currentState = SDTAI_State::PURSUIT;
 };

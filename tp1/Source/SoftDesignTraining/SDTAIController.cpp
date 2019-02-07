@@ -6,81 +6,170 @@
 #include "PhysicsHelpers.h"
 #include "SDTCollectible.h"
 #include "Engine.h"
-#include <chrono>
 #include <random>
 
 void ASDTAIController::Tick(float deltaTime)
 {
-	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-	std::default_random_engine generator(seed);
 	UWorld* world = GetWorld();
 	APawn* pawn = GetPawn();
 
 	// should be a serializefield kinda
-	const float distanceToObstacle = 200.f;
+	const float distanceToObstacle = 200.f; // 200.f worked the best
 	const float maxSpeed = 1.f;
-	const FVector acceleration = FVector(0.1f);
+	const float acceleration = 0.1f;
+	const float slowDownFactor = -5.f; // -5.f worked best for slowing down before turning
 
+	// We start by raycasting around us.
 	TArray<TEnumAsByte<EObjectTypeQuery>> TraceObjectTypes;
 	TraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
 	FHitResult losHit;
 	FCollisionQueryParams queryParams = FCollisionQueryParams();
 	queryParams.AddIgnoredActor(pawn);
-	bool isGonnaCollide = world->LineTraceSingleByObjectType
+	bool isGonnaCollideForward = world->LineTraceSingleByObjectType
 	(
 		losHit,
 		pawn->GetActorLocation(),
 		pawn->GetActorLocation() + distanceToObstacle * pawn->GetActorForwardVector(),
 		TraceObjectTypes, queryParams
 	);
+	bool isGonnaCollideBehind = world->LineTraceSingleByObjectType
+	(
+		losHit,
+		pawn->GetActorLocation(),
+		pawn->GetActorLocation() + distanceToObstacle * -1.0f *  pawn->GetActorForwardVector(),
+		TraceObjectTypes, queryParams
+	);
+	bool isGonnaCollideRight = world->LineTraceSingleByObjectType
+	(
+		losHit,
+		pawn->GetActorLocation(),
+		pawn->GetActorLocation() + distanceToObstacle * pawn->GetActorRightVector(),
+		TraceObjectTypes, queryParams
+	);
 
-	if (isGonnaCollide)
+	bool isGonnaCollideLeft = world->LineTraceSingleByObjectType
+	(
+		losHit,
+		pawn->GetActorLocation(),
+		pawn->GetActorLocation() + distanceToObstacle * -1.0f * pawn->GetActorRightVector(),
+		TraceObjectTypes, queryParams
+	);
+	
+	bool isTurning = false;
+
+	// Random generator lets us sometimes choose a different direction if it's possible
+	// Source: https://stackoverflow.com/questions/7560114/random-number-c-in-some-range
+	std::random_device rd;
+	std::mt19937 eng(rd());
+	std::uniform_int_distribution<> distr(0, 1);
+	// If there's a wall ahead...
+	if (!isGonnaCollideForward)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Salim est beau."));
-
-		// TODO: Switch randomly between four basic orientations ?
-		// TODO: Do it slowly.
-
-		FRotator rotator = FVector(0.f, 0.5f, 0.f).ToOrientationRotator();
-		//FRotator rotator = FVector(0.f, -0.5f, 0.f).ToOrientationRotator();
-		//FRotator rotator = FVector(0.f, -1.f, 0.f).ToOrientationRotator();
-		//FRotator rotator = FVector(0.f, 1.f, 0.f).ToOrientationRotator();
-		pawn->AddActorWorldRotation(rotator, true);
-
-		pawn->AddMovementInput(pawn->GetActorForwardVector(), maxSpeed, true);
-		//pawn->AddMovementInput(pawn->GetActorForwardVector(), m_currentSpeed.Size(), true);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("No collision forward."));
+		UE_LOG(LogTemp, Warning, TEXT("No collision forward."));
+		m_currentSpeed = IncreaseSpeed(acceleration, maxSpeed, deltaTime);
+		MoveForward(pawn, acceleration, maxSpeed);
 	}
-	else
+	else if (!isGonnaCollideLeft && distr(eng))
 	{
-		IncreaseSpeed(acceleration, maxSpeed, deltaTime);
-		pawn->AddMovementInput(pawn->GetActorForwardVector(), maxSpeed, true);
-		//pawn->AddMovementInput(pawn->GetActorForwardVector(), m_currentSpeed.Size(), true);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("No collision left."));
+		UE_LOG(LogTemp, Warning, TEXT("No collision left."));
+
+		// turn 45 degrees
+		FVector newDirection = -1.0f * FVector(1.f, 1.f, 0.f); // to the left
+		if (!pawn->GetActorForwardVector().Equals(newDirection, 0.1f))
+		{
+			isTurning = true;
+		}
+		if (isTurning)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Engaging drift procedure to the left."));
+			UE_LOG(LogTemp, Warning, TEXT("Engaging drift procedure to the left."));
+			RotateToDirection(pawn, newDirection, deltaTime);
+			m_currentSpeed = IncreaseSpeed(slowDownFactor * acceleration, maxSpeed, deltaTime);
+		}
+	}
+	else if (!isGonnaCollideRight && distr(eng))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("No collision right."));
+		UE_LOG(LogTemp, Warning, TEXT("No collision right."));
+
+		// turn 45 degrees
+		FVector newDirection = FVector(1.f, 1.f, 0.f);
+		if (!pawn->GetActorForwardVector().Equals(newDirection, 0.1f))
+		{
+			isTurning = true;
+		}
+		if (isTurning)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Engaging drift procedure to the right."));
+			UE_LOG(LogTemp, Warning, TEXT("Engaging drift procedure to the right."));
+			RotateToDirection(pawn, newDirection, deltaTime);
+			m_currentSpeed = IncreaseSpeed(slowDownFactor * acceleration, maxSpeed, deltaTime);
+		}
+	}
+	else if (!isGonnaCollideBehind)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("No collision behind."));
+		UE_LOG(LogTemp, Warning, TEXT("No collision behind."));
+
+		// turn 45 degrees
+		FVector newDirection = -1.f * pawn->GetActorForwardVector();
+		if (!pawn->GetActorForwardVector().Equals(newDirection, 0.1f))
+		{
+			isTurning = true;
+		}
+		if (isTurning)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Engaging drift procedure behind."));
+			UE_LOG(LogTemp, Warning, TEXT("Engaging drift procedure behind."));
+			RotateToDirection(pawn, newDirection, deltaTime);
+			m_currentSpeed = IncreaseSpeed(slowDownFactor * acceleration, maxSpeed, deltaTime);
+		}
+	}
+	else 
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("AI is stuck. We reset his position."));
+		UE_LOG(LogTemp, Warning, TEXT("AI is stuck. We reset his position."));
+		// turn 45 degrees
+		FVector newDirection = FVector(1.f, 1.f, 0.f);
+		if (!pawn->GetActorForwardVector().Equals(newDirection, 0.1f))
+		{
+			isTurning = true;
+		}
+		if (isTurning)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Engaging drift procedure to the right."));
+			UE_LOG(LogTemp, Warning, TEXT("Engaging drift procedure to the right."));
+			RotateToDirection(pawn, newDirection, deltaTime);
+			m_currentSpeed = IncreaseSpeed(slowDownFactor * acceleration, maxSpeed, deltaTime);
+		}
 	}
 }
 
-FVector ASDTAIController::IncreaseSpeed(FVector acceleration, float maxSpeed, float deltaTime) 
+void ASDTAIController::MoveForward(APawn* pawn, float acceleration, float maxSpeed) 
 {
-	FVector newSpeed = m_currentSpeed + acceleration * deltaTime;
+	pawn->AddMovementInput(pawn->GetActorForwardVector(), m_currentSpeed, true);
+}
 
-	// need to debug the speed
-	if (newSpeed.Size() > maxSpeed) 
-	{
-		newSpeed.Normalize(); // vecteur unitaire
-		newSpeed *= maxSpeed;
-	}
+float ASDTAIController::IncreaseSpeed(float acceleration, float maxSpeed, float deltaTime) 
+{
+	float newSpeed = m_currentSpeed + acceleration * deltaTime;
 
+	newSpeed = FMath::Clamp(newSpeed, 0.1f, maxSpeed);
 	return newSpeed;
 }
 
-FVector ASDTAIController::DecreaseSpeed(FVector acceleration, float maxSpeed, float deltaTime)
+void ASDTAIController::RotateToDirection(APawn* pawn, FVector direction, float deltaTime)
 {
-	FVector newSpeed = m_currentSpeed - acceleration * deltaTime;
-	if (newSpeed.Size() < m_currentSpeed.Size())
-	{
-		m_currentSpeed = FVector(0.1f);
-	}
+	//FVector forwardVector = pawn->GetActorForwardVector();
+	//FVector dir = (direction - forwardVector);
+	direction.Normalize();
+	//dir.Normalize();
+	//pawn->AddActorWorldRotation(FMath::Lerp(forwardVector.ToOrientationRotator(), dir.ToOrientationRotator(), 0.05f));
 
-	return newSpeed;
+	// TODO: Gradual rotation ?
+	pawn->AddActorWorldRotation(direction.ToOrientationRotator()); // this line does a snap rotation (ugly)
 }
 
 bool ASDTAIController::MoveToTarget(FVector2D target, float targetSpeed, float deltaTime)
