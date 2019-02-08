@@ -4,26 +4,36 @@
 
 #include "CoreMinimal.h"
 #include "Engine/StaticMeshActor.h"
+#include "Engine.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "SDTCollectible.generated.h"
 
 /**
- * 
- */
+*
+*/
 UCLASS()
 class SOFTDESIGNTRAINING_API ASDTCollectible : public AStaticMeshActor
 {
 	GENERATED_BODY()
 public:
-    ASDTCollectible();
+	ASDTCollectible();
+	virtual void BeginPlay() override;
 
-    void Collect();
-    void OnCooldownDone();
-    bool IsOnCooldown();
+	void Collect();
+	void OnCooldownDone();
+	bool IsOnCooldown();
+	//void InitializeAudioComponent();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
-    float m_CollectCooldownDuration = 10.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
+		float m_CollectCooldownDuration = 10.f;
+
+	USoundCue* pickupAudioCue;
+
+	//UAudioComponent* pickupAudioComponent;
 
 protected:
-    FTimerHandle m_CollectCooldownTimer;
-	
+	FTimerHandle m_CollectCooldownTimer;
+
+
 };

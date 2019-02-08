@@ -81,6 +81,8 @@ bool PhysicsHelpers::SphereCast(const FVector& start, const FVector& end, float 
 
 
 	FCollisionObjectQueryParams objectQueryParams; // All objects
+	objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	objectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 	FCollisionShape collisionShape;
 	collisionShape.SetSphere(radius);
 	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
@@ -108,6 +110,8 @@ bool PhysicsHelpers::SphereOverlap(const FVector& pos, float radius, TArray<stru
 
 
 	FCollisionObjectQueryParams objectQueryParams; // All objects
+	objectQueryParams.AddObjectTypesToQuery(ECC_GameTraceChannel3);
+	objectQueryParams.AddObjectTypesToQuery(ECC_GameTraceChannel5);
 	FCollisionShape collisionShape;
 	collisionShape.SetSphere(radius);
 	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
