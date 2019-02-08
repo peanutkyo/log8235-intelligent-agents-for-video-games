@@ -30,9 +30,10 @@ private:
 	void DrawVisionCone(UWorld* world, APawn* pawn, FVector const& dir, float angle) const;
 	TArray<FOverlapResult> CollectTargetActorsInFrontOfCharacter(APawn const* pawn, PhysicsHelpers& physicHelper) const;
 
-	void MoveForward(APawn* pawn, float acceleration, float maxSpeed);
+	void MoveForward(APawn* pawn);
 	float IncreaseSpeed(float acceleration, float maxSpeed, float deltaTime);
-	void RotateToDirection(APawn* pawn, FVector direction, float deltaTime);
+	bool RotateToDirection(APawn* pawn, FVector direction, float deltaTime);
+	void TurnToDirection(APawn* pawn, float deltaTime);
 
 	bool CheckTargetVisibility(AActor* target, PhysicsHelpers& physicHelper);
 	void DisplayMetrics(float deltaTime);
@@ -68,4 +69,7 @@ private:
 
 	enum struct SDTAI_State { PURSUIT, FLEE };
 	SDTAI_State m_currentState = SDTAI_State::PURSUIT;
+
+	bool m_isChangingDirection = false;
+	FVector m_newDirection = FVector(0.f, 0.f, 0.f);
 };
