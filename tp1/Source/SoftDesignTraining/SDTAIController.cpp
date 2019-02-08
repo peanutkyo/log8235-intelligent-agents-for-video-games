@@ -5,7 +5,7 @@
 #include "DrawDebugHelpers.h"
 #include "PhysicsHelpers.h"
 #include "SDTCollectible.h"
-#include "SoftDesignTrainingPlayerController.h"
+#include "SoftDesignTrainingMainCharacter.h"
 #include "Engine.h"
 #include <random>
 
@@ -24,7 +24,8 @@ void ASDTAIController::Tick(float deltaTime)
 	for (FOverlapResult item : detectedItems)
 	{
 		AActor* itemActor = item.GetActor();
-		if (priority < 2 && itemActor->IsA(ASoftDesignTrainingPlayerController::StaticClass())) {
+		if (priority < 2 && itemActor->IsA(ASoftDesignTrainingMainCharacter::StaticClass())) {
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString("TEST"));
 			if (CheckTargetVisibility(itemActor, physicsHelper)) {
 				target = itemActor;
 				priority = 2;
@@ -35,7 +36,6 @@ void ASDTAIController::Tick(float deltaTime)
 			if (Cast<ASDTCollectible>(itemActor)->GetStaticMeshComponent()->IsVisible() && CheckTargetVisibility(itemActor, physicsHelper)) {
 				target = itemActor;
 				priority = 1;
-				GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Blue, FString("TEEEEEEEEEEEEEEEEEEEEEESSSSSSSSSSSSSSST"));
 			}
 		}
 	}
@@ -55,13 +55,9 @@ void ASDTAIController::Tick(float deltaTime)
 			FVector2D collectible = FVector2D(target->GetActorLocation());
 			MoveToTarget(collectible, m_maxSpeed, deltaTime);
 		}
-		else if (target->IsA(ASoftDesignTrainingPlayerController::StaticClass())) {
+		else if (target->IsA(ASoftDesignTrainingMainCharacter::StaticClass())) {
 			FVector2D player = FVector2D(target->GetActorLocation());
 			MoveToTarget(player, m_maxSpeed, deltaTime);
-		}
-		else if (target->FindComponentByClass<UPrimitiveComponent>()->GetCollisionProfileName().ToString() == "DeathObject") {
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString("Death Floor Detected!!!"));
 		}
 	}
 
@@ -122,7 +118,7 @@ void ASDTAIController::DrawVisionCone(UWorld* world, APawn* pawn, FVector const&
 TArray<FOverlapResult> ASDTAIController::CollectTargetActorsInFrontOfCharacter(APawn const* pawn, PhysicsHelpers& physicHelper) const
 {
 	TArray<FOverlapResult> outResults;
-	physicHelper.SphereOverlap(pawn->GetActorLocation() + pawn->GetActorForwardVector() * m_visionRadius, m_visionRadius, outResults, false);
+	physicHelper.SphereOverlap(pawn->GetActorLocation() + pawn->GetActorForwardVector() * m_visionRadius, m_visionRadius, outResults, m_enableDebug);
 	return outResults;
 }
 
@@ -141,12 +137,12 @@ bool ASDTAIController::CheckTargetVisibility(AActor * target, PhysicsHelpers& ph
 	APawn* pawn = GetPawn();
 	TArray<FHitResult> outHitResults;
 	bool detected = physicHelper.SphereCast(pawn->GetActorLocation(), target->GetActorLocation(), 42, outHitResults, true);
-	if (GEngine && detected)
-	GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString(outHitResults[0].GetActor()->GetName()));
-	if (detected) {
-		return false;
+	/*if (GEngine && detected)
+		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString(outHitResults[0].GetActor()->GetName()));*/
+	if (detected && outHitResults[0].GetActor()->IsA(target->GetClass())) {
+		return true;
 	}
-	return true;
+	return false;
 }
 
 void ASDTAIController::DisplayMetrics(float deltaTime)

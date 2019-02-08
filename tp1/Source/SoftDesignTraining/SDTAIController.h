@@ -70,6 +70,10 @@ private:
 	UPROPERTY(EditAnywhere)
 		float m_metricsPeriod = 60;
 
+	/* Indique si les options de debug sont actives ou pas. */
+	UPROPERTY(EditAnywhere)
+		bool m_enableDebug = false;
+
 	int m_nPickup = 0;
 	int m_nDeath = 0;
 	float m_currentLiveTime = 0.f;
