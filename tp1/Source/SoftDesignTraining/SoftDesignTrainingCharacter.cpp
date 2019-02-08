@@ -24,19 +24,25 @@ void ASoftDesignTrainingCharacter::BeginPlay()
 
 void ASoftDesignTrainingCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	ASDTAIController* controller = Cast<ASDTAIController>(GetController());
+	AController* controller = GetController();
 
     if (OtherComponent->GetCollisionObjectType() == COLLISION_DEATH_OBJECT)
     {
         SetActorLocation(m_StartingPosition);
-		controller->AddDeathCount();
+
+		if (controller->IsA(ASDTAIController::StaticClass())) {
+			Cast<ASDTAIController>(controller)->AddDeathCount();
+		}
     }
     else if(ASDTCollectible* collectibleActor = Cast<ASDTCollectible>(OtherActor))
     {
         if (!collectibleActor->IsOnCooldown())
         {
             OnCollectPowerUp();
-			controller->AddCollectedCount();
+			
+			if (controller->IsA(ASDTAIController::StaticClass())) {
+				Cast<ASDTAIController>(controller)->AddCollectedCount();
+			}
         }
 
         collectibleActor->Collect();
@@ -45,7 +51,10 @@ void ASoftDesignTrainingCharacter::OnBeginOverlap(UPrimitiveComponent* Overlappe
     {
 		if (mainCharacter->IsPoweredUp()) {
 			SetActorLocation(m_StartingPosition);
-			controller->AddDeathCount();
+			
+			if (controller->IsA(ASDTAIController::StaticClass())) {
+				Cast<ASDTAIController>(controller)->AddDeathCount();
+			}
 		}
     }
 }
