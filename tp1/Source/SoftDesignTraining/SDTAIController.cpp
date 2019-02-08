@@ -5,6 +5,7 @@
 #include "DrawDebugHelpers.h"
 #include "PhysicsHelpers.h"
 #include "SDTCollectible.h"
+#include "SoftDesignTrainingPlayerController.h"
 #include "Engine.h"
 #include <random>
 
@@ -17,33 +18,51 @@ void ASDTAIController::Tick(float deltaTime)
 	//DrawVisionCone(world, pawn, pawn->GetActorForwardVector(), m_visionAngle);
 	TArray<FOverlapResult> detectedItems = CollectTargetActorsInFrontOfCharacter(pawn, physicsHelper);
 
+	// Find the target of upmost priority
 	target = nullptr;
+	int priority = 0;
 	for (FOverlapResult item : detectedItems)
 	{
-		/*if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString(item.GetActor()->FindComponentByClass<UPrimitiveComponent>()->GetCollisionProfileName().ToString()));*/
-
-		if (item.GetActor()->IsA(ASDTCollectible::StaticClass()))
-		{
-			FVector2D collectible = FVector2D(item.GetActor()->GetActorLocation());
-			if (Cast<ASDTCollectible>(item.GetActor())->GetStaticMeshComponent()->IsVisible() && CheckTargetVisibility(item.GetActor(), physicsHelper)) {
-				target = item.GetActor();
-				MoveToTarget(collectible, m_maxSpeed, deltaTime);
+		AActor* itemActor = item.GetActor();
+		if (priority < 2 && itemActor->IsA(ASoftDesignTrainingPlayerController::StaticClass())) {
+			if (CheckTargetVisibility(itemActor, physicsHelper)) {
+				target = itemActor;
+				priority = 2;
+				break;
 			}
-			break;
 		}
-		else if (item.GetActor()->FindComponentByClass<UPrimitiveComponent>()->GetCollisionProfileName().ToString() == "DeathObject") {
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString("Death Floor Detected!!!"));
+		else if (priority < 1 && itemActor->IsA(ASDTCollectible::StaticClass())) {
+			if (Cast<ASDTCollectible>(itemActor)->GetStaticMeshComponent()->IsVisible() && CheckTargetVisibility(itemActor, physicsHelper)) {
+				target = itemActor;
+				priority = 1;
+				GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Blue, FString("TEEEEEEEEEEEEEEEEEEEEEESSSSSSSSSSSSSSST"));
+			}
 		}
 	}
 
 	if (GEngine)
-	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, FString(target == nullptr ? "no target focused" : "target in field of view"));
+		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, FString(target == nullptr ? "no target focused" : target->GetName()));
 
+	// if no target is found, randomly choose walk around
 	if (target == nullptr) {
 		//MoveTowardsDirection(FVector2D(pawn->GetActorForwardVector()), m_maxSpeed, deltaTime);
 		NavigateAround(world, pawn, deltaTime);
+	}
+	else {
+		// Make decision based on target object type
+		if (target->IsA(ASDTCollectible::StaticClass()))
+		{
+			FVector2D collectible = FVector2D(target->GetActorLocation());
+			MoveToTarget(collectible, m_maxSpeed, deltaTime);
+		}
+		else if (target->IsA(ASoftDesignTrainingPlayerController::StaticClass())) {
+			FVector2D player = FVector2D(target->GetActorLocation());
+			MoveToTarget(player, m_maxSpeed, deltaTime);
+		}
+		else if (target->FindComponentByClass<UPrimitiveComponent>()->GetCollisionProfileName().ToString() == "DeathObject") {
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString("Death Floor Detected!!!"));
+		}
 	}
 
 	DisplayMetrics(deltaTime);
