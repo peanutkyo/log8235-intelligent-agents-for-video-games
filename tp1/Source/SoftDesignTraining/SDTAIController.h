@@ -38,31 +38,35 @@ private:
 	bool CheckTargetVisibility(AActor* target, PhysicsHelpers& physicHelper);
 	void DisplayMetrics(float deltaTime);
 
-	/** Indique la vitesse maximale que le personnage AI est capable de bouger, donc il devrait pouvoir acc�l�rer jusqu'� atteindre cette vitesse maximale. */
+	/* Indique la vitesse maximale que le personnage AI est capable de bouger. */
 	UPROPERTY(EditAnywhere)
 		float m_maxSpeed = 100.0f;
 
-	/** Indique l'acc�l�ration du changement de vitesse du personnage AI, cela est aussi valable en tant qu'acc�l�ration que d�c�l�ration. */
+	/* Indique la vitesse actuelle du personnage. C'est aussi sa vitesse de depart avant de partir le jeu. */
+	UPROPERTY(EditAnywhere)
+		float m_currentSpeed = 0.5f;
+
+	/* Indique l'acc�l�ration du personnage AI. Elle vient modifier la vitesse actuelle du personnage. */
 	UPROPERTY(EditAnywhere)
 		float m_acceleration = 1.0f;
 
-	/** Indique le rayon maximal du sphere de vision dont le personnage AI est capable de voir. */
+	/* Indique le rayon maximal de la sphere de vision dont le personnage AI est capable de voir. */
 	UPROPERTY(EditAnywhere)
 		float m_visionRadius = 500.0f;
 
-	/* Indique la distance minimale avant de faire une manoeuvre d'evitement */
+	/* Indique la distance minimale avant de detecter une collision */
 	UPROPERTY(EditAnywhere)
 		float m_distanceToObstacle = 200.0f;
 
-	/* Indique le modifier pour decelerer */
+	/* Indique le facteur de modification pour decelerer lors de virages */
 	UPROPERTY(EditAnywhere)
 		float m_slowDownFactor = -5.0f;
 
-	/** Indique si on veut afficher les donnees metriques du jeu pour l'analyse. */
+	/* Indique si on veut afficher les donnees metriques du jeu pour l'analyse. */
 	UPROPERTY(EditAnywhere)
 		bool m_enableMetrics = true;
 
-	/** Indique si la p�riode de temps en seconde dans laquelle on recueille des donnees avant de r�initialiser. */
+	/* Indique la p�riode de temps en secondes dans laquelle on recueille des donnees avant de r�initialiser. */
 	UPROPERTY(EditAnywhere)
 		float m_metricsPeriod = 60;
 
@@ -72,8 +76,6 @@ private:
 	int m_nPeriod = 1;
 
 	AActor* target = nullptr;
-
-	float m_currentSpeed = 0.5f;
 
 	enum struct SDTAI_State { PURSUIT, FLEE };
 	SDTAI_State m_currentState = SDTAI_State::PURSUIT;
