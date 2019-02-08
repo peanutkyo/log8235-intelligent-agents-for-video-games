@@ -50,6 +50,14 @@ private:
 	UPROPERTY(EditAnywhere)
 		float m_visionRadius = 500.0f;
 
+	/* Indique la distance minimale avant de faire une manoeuvre d'evitement */
+	UPROPERTY(EditAnywhere)
+		float m_distanceToObstacle = 200.0f;
+
+	/* Indique le modifier pour decelerer */
+	UPROPERTY(EditAnywhere)
+		float m_slowDownFactor = -5.0f;
+
 	/** Indique si on veut afficher les donnees metriques du jeu pour l'analyse. */
 	UPROPERTY(EditAnywhere)
 		bool m_enableMetrics = true;
