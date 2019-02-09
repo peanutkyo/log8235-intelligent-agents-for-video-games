@@ -24,10 +24,10 @@ public:
 
 private:
 	bool MoveToTarget(FVector2D target, float speed, float deltaTime);
+	void MoveToOppositeDirectionOfTarget(FVector2D target, float targetSpeed, float deltaTime);
 	void MoveTowardsDirection(FVector2D direction, float speed, float deltaTime);
 	void NavigateAround(UWorld* world, APawn* pawn, float deltaTime);
 
-	void DrawVisionCone(UWorld* world, APawn* pawn, FVector const& dir, float angle) const;
 	TArray<FOverlapResult> CollectTargetActorsInFrontOfCharacter(APawn const* pawn, PhysicsHelpers& physicHelper) const;
 
 	void MoveForward(APawn* pawn);

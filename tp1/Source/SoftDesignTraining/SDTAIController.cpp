@@ -15,49 +15,60 @@ void ASDTAIController::Tick(float deltaTime)
 	APawn* pawn = GetPawn();
 	PhysicsHelpers physicsHelper = PhysicsHelpers(world);
 
-	//DrawVisionCone(world, pawn, pawn->GetActorForwardVector(), m_visionAngle);
 	TArray<FOverlapResult> detectedItems = CollectTargetActorsInFrontOfCharacter(pawn, physicsHelper);
 
-	// Find the target of upmost priority
-	target = nullptr;
-	int priority = 0;
-	for (FOverlapResult item : detectedItems)
-	{
-		AActor* itemActor = item.GetActor();
-		if (priority < 2 && itemActor->IsA(ASoftDesignTrainingMainCharacter::StaticClass())) {
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString("TEST"));
-			if (CheckTargetVisibility(itemActor, physicsHelper)) {
-				target = itemActor;
-				priority = 2;
-				break;
-			}
+	if (m_currentState == SDTAI_State::FLEE && target != nullptr && target->IsA(ASoftDesignTrainingMainCharacter::StaticClass())) {
+		if (CheckTargetVisibility(target, physicsHelper)) {
+			MoveToOppositeDirectionOfTarget(FVector2D(target->GetActorLocation()), m_maxSpeed, deltaTime);
 		}
-		else if (priority < 1 && itemActor->IsA(ASDTCollectible::StaticClass())) {
-			if (Cast<ASDTCollectible>(itemActor)->GetStaticMeshComponent()->IsVisible() && CheckTargetVisibility(itemActor, physicsHelper)) {
-				target = itemActor;
-				priority = 1;
-			}
+		else {
+			target = nullptr;
 		}
-	}
-
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, FString(target == nullptr ? "no target focused" : target->GetName()));
-
-	// if no target is found, randomly choose walk around
-	if (target == nullptr) {
-		//MoveTowardsDirection(FVector2D(pawn->GetActorForwardVector()), m_maxSpeed, deltaTime);
-		NavigateAround(world, pawn, deltaTime);
 	}
 	else {
-		// Make decision based on target object type
-		if (target->IsA(ASDTCollectible::StaticClass()))
+
+		// Find the target of upmost priority
+		target = nullptr;
+		int priority = 0;
+		for (FOverlapResult item : detectedItems)
 		{
-			FVector2D collectible = FVector2D(target->GetActorLocation());
-			MoveToTarget(collectible, m_maxSpeed, deltaTime);
+			AActor* itemActor = item.GetActor();
+			if (priority < 2 && itemActor->IsA(ASoftDesignTrainingMainCharacter::StaticClass())) {
+				if (CheckTargetVisibility(itemActor, physicsHelper)) {
+					target = itemActor;
+					priority = 2;
+					break;
+				}
+			}
+			else if (priority < 1 && itemActor->IsA(ASDTCollectible::StaticClass())) {
+				if (Cast<ASDTCollectible>(itemActor)->GetStaticMeshComponent()->IsVisible() && CheckTargetVisibility(itemActor, physicsHelper)) {
+					target = itemActor;
+					priority = 1;
+				}
+			}
 		}
-		else if (target->IsA(ASoftDesignTrainingMainCharacter::StaticClass())) {
-			FVector2D player = FVector2D(target->GetActorLocation());
-			MoveToTarget(player, m_maxSpeed, deltaTime);
+
+		// if no target is found, randomly choose walk around
+		if (target == nullptr) {
+			NavigateAround(world, pawn, deltaTime);
+		}
+		else {
+			// Make decision based on target object type
+			if (target->IsA(ASDTCollectible::StaticClass()))
+			{
+				FVector2D collectible = FVector2D(target->GetActorLocation());
+				MoveToTarget(collectible, m_maxSpeed, deltaTime);
+			}
+			else if (target->IsA(ASoftDesignTrainingMainCharacter::StaticClass())) {
+				if (Cast<ASoftDesignTrainingMainCharacter>(target)->IsPoweredUp()) {
+					m_currentState = SDTAI_State::FLEE;
+				}
+				else {
+					m_currentState = SDTAI_State::PURSUIT;
+					FVector2D player = FVector2D(target->GetActorLocation());
+					MoveToTarget(player, m_maxSpeed, deltaTime);
+				}
+			}
 		}
 	}
 
@@ -100,6 +111,16 @@ bool ASDTAIController::MoveToTarget(FVector2D target, float targetSpeed, float d
 	return toTarget.Size() < FMath::Min(m_maxSpeed, targetSpeed) * deltaTime;
 }
 
+void ASDTAIController::MoveToOppositeDirectionOfTarget(FVector2D target, float targetSpeed, float deltaTime) {
+	APawn* pawn = GetPawn();
+	FVector const pawnPosition(pawn->GetActorLocation());
+	FVector2D const toTarget = -1 * (target - FVector2D(pawnPosition));
+	FVector2D const displacement = FMath::Min(toTarget.Size(), FMath::Min(m_maxSpeed, targetSpeed) * deltaTime) * toTarget.GetSafeNormal();
+	pawn->AddMovementInput(FVector(displacement, 0.f), m_currentSpeed, true);
+	//pawn->SetActorLocation(pawnPosition + FVector(displacement, 0.f), true);
+	pawn->SetActorRotation(FVector(displacement, 0.f).ToOrientationQuat());
+}
+
 void ASDTAIController::MoveTowardsDirection(FVector2D direction, float speed, float deltaTime)
 {
 	APawn* pawn = GetPawn();
@@ -108,11 +129,6 @@ void ASDTAIController::MoveTowardsDirection(FVector2D direction, float speed, fl
 	
 	pawn->SetActorLocation(pawnPosition + FVector(displacement, 0.f), true);
 	pawn->SetActorRotation(FVector(direction, 0.f).ToOrientationQuat());
-}
-
-void ASDTAIController::DrawVisionCone(UWorld* world, APawn* pawn, FVector const& dir, float angle) const
-{
-	DrawDebugCone(world, pawn->GetActorLocation(), dir, 5000.0f, angle, angle, 50, FColor::Green, false, -1.0f, 0, 5.0f);
 }
 
 TArray<FOverlapResult> ASDTAIController::CollectTargetActorsInFrontOfCharacter(APawn const* pawn, PhysicsHelpers& physicHelper) const
@@ -149,6 +165,8 @@ void ASDTAIController::DisplayMetrics(float deltaTime)
 {
 	if (m_enableMetrics && GEngine) {
 		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, FString::Printf(TEXT("--------------------------------------------------------")));
+		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, FString::Printf(TEXT("Etat courant : en %s"), *FString(m_currentState == SDTAI_State::PURSUIT ? "poursuite" : "fuite")));
+		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, FString::Printf(TEXT("Cible courant : %s"), *FString(target == nullptr ? "aucun cible en focus" : target->GetName())));
 		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, FString::Printf(TEXT("Nombre de mort du AI : %s"), *FString::FromInt(m_nDeath)));
 		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, FString::Printf(TEXT("Nombre de Pickup ramasse par AI : %s"), *FString::FromInt(m_nPickup)));
 
