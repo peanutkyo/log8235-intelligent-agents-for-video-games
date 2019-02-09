@@ -152,9 +152,7 @@ bool ASDTAIController::CheckTargetVisibility(AActor * target, PhysicsHelpers& ph
 {
 	APawn* pawn = GetPawn();
 	TArray<FHitResult> outHitResults;
-	bool detected = physicHelper.SphereCast(pawn->GetActorLocation(), target->GetActorLocation(), 42, outHitResults, true);
-	/*if (GEngine && detected)
-		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString(outHitResults[0].GetActor()->GetName()));*/
+	bool detected = physicHelper.SphereCast(pawn->GetActorLocation(), target->GetActorLocation(), 42, outHitResults, m_enableDebug);
 	if (detected && outHitResults[0].GetActor()->IsA(target->GetClass())) {
 		return true;
 	}
@@ -205,7 +203,8 @@ void ASDTAIController::NavigateAround(UWorld* world, APawn* pawn, float deltaTim
 	FVector floorLevel = FVector(0.f, 0.f, -100.f);
 	FVector deathFloorVector = pawn->GetActorLocation() + m_distanceToObstacle / 2 * pawn->GetActorForwardVector() + floorLevel;
 
-	DrawDebugLine(world, pawn->GetActorLocation(), deathFloorVector, FColor::Magenta);
+	if (m_enableDebug)
+		DrawDebugLine(world, pawn->GetActorLocation(), deathFloorVector, FColor::Magenta);
 
 	FCollisionObjectQueryParams objectQueryParamsDeathFloor;
 	objectQueryParamsDeathFloor.AddObjectTypesToQuery(ECollisionChannel::ECC_GameTraceChannel3);
