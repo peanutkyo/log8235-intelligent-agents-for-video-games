@@ -1,0 +1,17 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{E953227A-4C8F-6E4B-CFA9-AAAD990613AF}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "SoftDesignTraining",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"AIModule"
+			]
+		}
+	]
+}
