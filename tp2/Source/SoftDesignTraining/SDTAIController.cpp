@@ -32,7 +32,7 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 	for (int i = 0; i < collectibles.Num(); i++) {
 		float distance = GetPawn()->GetDistanceTo(collectibles[i]);
 		
-		if (distance < shortestDistance) {
+		if (!Cast<ASDTCollectible>(collectibles[i])->IsOnCooldown() && distance < shortestDistance) {
 			closestIndex = i;
 			shortestDistance = distance;
 		}
@@ -42,21 +42,22 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 
 	// Define path and pass it to PathFollowingComponent
 	UNavigationPath* path = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), m_Target->GetActorLocation());
-	if (path != nullptr && path->GetPath().IsValid()) {
+	if (path != nullptr && path->GetPath().IsValid() && !path->GetPath()->IsPartial()) {
 		m_PathFollowingComponent->RequestMove(path->GetPath());
+		m_ReachedTarget = false;
 	}
-
-	m_ReachedTarget = false;
 }
 
 void ASDTAIController::OnMoveToTarget()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, TEXT("OnMoveToTarget"));
     m_ReachedTarget = false;
 }
 
 void ASDTAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
     Super::OnMoveCompleted(RequestID, Result);
+	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, TEXT("OnMoveCompleted"));
 
     m_ReachedTarget = true;
 }

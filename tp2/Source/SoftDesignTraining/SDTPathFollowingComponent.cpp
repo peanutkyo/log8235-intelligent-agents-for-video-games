@@ -16,7 +16,8 @@ USDTPathFollowingComponent::USDTPathFollowingComponent(const FObjectInitializer&
 
 void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
 {
-	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Red, TEXT("FollowPathSegment"));
+	Super::FollowPathSegment(DeltaTime);
+
     const TArray<FNavPathPoint>& points = Path->GetPathPoints();
     const FNavPathPoint& segmentStart = points[MoveSegmentStartIndex];
 
