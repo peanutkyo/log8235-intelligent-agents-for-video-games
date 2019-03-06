@@ -10,6 +10,8 @@
 #include "UnrealMathUtility.h"
 #include "SDTUtils.h"
 #include "EngineUtils.h"
+#include <Engine/Engine.h>
+#include <AI/Navigation/NavigationPath.h>
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
@@ -19,6 +21,32 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
     //Move to target depending on current behavior
+
+
+	// Find the nearest collectible target
+	TArray<AActor*> collectibles;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
+
+	int closestIndex = 0;
+	float shortestDistance = 9999.f;
+	for (int i = 0; i < collectibles.Num(); i++) {
+		float distance = GetPawn()->GetDistanceTo(collectibles[i]);
+		
+		if (distance < shortestDistance) {
+			closestIndex = i;
+			shortestDistance = distance;
+		}
+	}
+
+	m_Target = collectibles[closestIndex];
+
+	// Define path and pass it to PathFollowingComponent
+	UNavigationPath* path = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), m_Target->GetActorLocation());
+	if (path != nullptr && path->GetPath().IsValid()) {
+		m_PathFollowingComponent->RequestMove(path->GetPath());
+	}
+
+	m_ReachedTarget = false;
 }
 
 void ASDTAIController::OnMoveToTarget()
@@ -35,7 +63,37 @@ void ASDTAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollow
 
 void ASDTAIController::ShowNavigationPath()
 {
+	/* TODO working example DELETE WHEN DONE
+	//const TArray<FNavPathPoint>& points = m_PathFollowingComponent->GetPath()->GetPathPoints();
+	TArray<FNavPathPoint>& points = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetActorLocation())->GetPath()->GetPathPoints();
+
+	FVector startPoint = points[0].Location;
+	FVector endPoint;
+	for (FNavPathPoint point : points) {
+		endPoint = point.Location;
+		DrawDebugLine(GetWorld(), startPoint, endPoint, FColor::Green);
+		DrawDebugSphere(GetWorld(), endPoint, 10.0f, 12, FColor::Red);
+		startPoint = endPoint;
+	}
+	*/
+
+
     //Show current navigation path DrawDebugLine and DrawDebugSphere
+	if (m_PathFollowingComponent->GetPath().IsValid()) {
+		const TArray<FNavPathPoint>& points = m_PathFollowingComponent->GetPath()->GetPathPoints();
+
+		FVector startPoint = points[0].Location;
+		FVector endPoint;
+		for (FNavPathPoint point : points) {
+			endPoint = point.Location;
+			DrawDebugLine(GetWorld(), startPoint, endPoint, FColor::Green);
+			DrawDebugSphere(GetWorld(), endPoint, 10.0f, 12, FColor::Red);
+			startPoint = endPoint;
+		}
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, TEXT("Invalid Path"));
+	}
 }
 
 void ASDTAIController::ChooseBehavior(float deltaTime)

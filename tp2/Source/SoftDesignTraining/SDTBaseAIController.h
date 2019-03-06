@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "SDTPathFollowingComponent.h"
 #include "SDTBaseAIController.generated.h"
 
 /**
@@ -17,6 +18,7 @@ class SOFTDESIGNTRAINING_API ASDTBaseAIController : public AAIController
 public:
 
     ASDTBaseAIController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	virtual void BeginPlay() override;
     virtual void Tick(float deltaTime) override;
 	
 protected:
@@ -24,7 +26,10 @@ protected:
     virtual void ImpulseToDirection(float deltaTime) {};
 
     bool m_ReachedTarget;
+	AActor* m_Target;
+	USDTPathFollowingComponent* m_PathFollowingComponent;
 private:
+
     virtual void GoToBestTarget(float deltaTime) {};
     virtual void ChooseBehavior(float deltaTime) {};
     virtual void ShowNavigationPath() {};

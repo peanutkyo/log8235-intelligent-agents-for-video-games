@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "DrawDebugHelpers.h"
+#include <Engine/Engine.h>
 
 USDTPathFollowingComponent::USDTPathFollowingComponent(const FObjectInitializer& ObjectInitializer)
 {
@@ -15,6 +16,7 @@ USDTPathFollowingComponent::USDTPathFollowingComponent(const FObjectInitializer&
 
 void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
 {
+	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Red, TEXT("FollowPathSegment"));
     const TArray<FNavPathPoint>& points = Path->GetPathPoints();
     const FNavPathPoint& segmentStart = points[MoveSegmentStartIndex];
 
@@ -30,6 +32,9 @@ void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
 
 void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
 {
+	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Red, TEXT("SetMoveSegment"));
+	//https://wiki.unrealengine.com/Unreal_Engine_AI_Tutorial_-_1_-_Making_AI_Jump_as_a_Part_of_Path_Following
+
     Super::SetMoveSegment(segmentStartIndex);
 
     const TArray<FNavPathPoint>& points = Path->GetPathPoints();
@@ -39,10 +44,18 @@ void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
     if (SDTUtils::HasJumpFlag(segmentStart) && FNavMeshNodeFlags(segmentStart.Flags).IsNavLink())
     {
         //Handle starting jump
+		//CharacterMoveComp->SetMovementMode(MOVE_Flying);
     }
     else
     {
         //Handle normal segments
+		//CharacterMoveComp->SetMovementMode(MOVE_Walking);
     }
+}
+
+void USDTPathFollowingComponent::UpdatePathSegment()
+{
+	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Red, TEXT("UpdatePathSegment"));
+	Super::UpdatePathSegment();
 }
 
