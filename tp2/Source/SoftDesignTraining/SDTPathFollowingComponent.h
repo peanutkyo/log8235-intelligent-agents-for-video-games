@@ -15,6 +15,7 @@ class SOFTDESIGNTRAINING_API USDTPathFollowingComponent : public UPathFollowingC
     GENERATED_UCLASS_BODY()
 
 protected:
+	UPROPERTY(transient)
 	UCharacterMovementComponent* CharacterMoveComp;
 
 public:

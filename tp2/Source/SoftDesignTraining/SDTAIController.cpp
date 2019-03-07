@@ -116,8 +116,11 @@ void ASDTAIController::ChooseBehavior(float deltaTime)
 void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
 {
     //finish jump before updating AI state
-    if (AtJumpSegment)
-        return;
+	if (AtJumpSegment) {
+		GetCharacter()->Jump();
+		AtJumpSegment = false;
+		return;
+	}
 
     APawn* selfPawn = GetPawn();
     if (!selfPawn)
