@@ -12,6 +12,9 @@
 #include "EngineUtils.h"
 #include <Engine/Engine.h>
 #include <AI/Navigation/NavigationPath.h>
+#include <vector>
+#include <algorithm>
+
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
@@ -27,24 +30,32 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 	TArray<AActor*> collectibles;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
 
-	int closestIndex = 0;
-	float shortestDistance = 9999.f;
+	// add collectibles to a vector of pairs data struture
+	std::vector<std::pair<int, int>> orderedCollectibles;
+	APawn* pawn = GetPawn();
 	for (int i = 0; i < collectibles.Num(); i++) {
-		float distance = GetPawn()->GetDistanceTo(collectibles[i]);
-		
-		if (!Cast<ASDTCollectible>(collectibles[i])->IsOnCooldown() && distance < shortestDistance) {
-			closestIndex = i;
-			shortestDistance = distance;
+		if (!Cast<ASDTCollectible>(collectibles[i])->IsOnCooldown()) {
+			orderedCollectibles.push_back(std::make_pair(i, pawn->GetDistanceTo(collectibles[i])));
 		}
 	}
+	
+	// sort the collectibles by their distance from the AI Pawn location
+	std::sort(orderedCollectibles.begin(), orderedCollectibles.end(), [](auto &left, auto &right) {
+		return left.second < right.second;
+	});
 
-	m_Target = collectibles[closestIndex];
-
-	// Define path and pass it to PathFollowingComponent
-	UNavigationPath* path = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), m_Target->GetActorLocation());
-	if (path != nullptr && path->GetPath().IsValid() && !path->GetPath()->IsPartial()) {
-		m_PathFollowingComponent->RequestMove(path->GetPath());
-		m_ReachedTarget = false;
+	// Set as target the first closest and reachable collectible
+	bool reachableCollectibleFound = false;
+	int i = 0;
+	while (!reachableCollectibleFound && i < orderedCollectibles.size()) {
+		UNavigationPath* path = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), collectibles[orderedCollectibles[i].first]->GetActorLocation());
+		if (path != nullptr && path->GetPath().IsValid() && !path->GetPath()->IsPartial()) {
+			m_Target = collectibles[i];
+			m_PathFollowingComponent->RequestMove(path->GetPath());
+			m_ReachedTarget = false;
+			reachableCollectibleFound = true;
+		}
+		i++;
 	}
 }
 
