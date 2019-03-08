@@ -40,16 +40,18 @@ void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
 	const TArray<FNavPathPoint>& points = Path->GetPathPoints();
 	const FNavPathPoint& segmentStart = points[MoveSegmentStartIndex];
 
+	//ASDTAIController* controller = Cast<ASDTAIController>(GetOwner());
+	//UCharacterMovementComponent* characterMovementComp = controller->GetCharacter()->GetCharacterMovement();
 	if (SDTUtils::HasJumpFlag(segmentStart) && FNavMeshNodeFlags(segmentStart.Flags).IsNavLink())
 	{
 		//Handle starting jump
 		Cast<ASDTAIController>(GetOwner())->AtJumpSegment = true;
-		//CharacterMoveComp->SetMovementMode(MOVE_Flying);
+		//characterMovementComp->SetMovementMode(MOVE_Flying);
 	}
 	else
 	{
 		//Handle normal segments
-		//CharacterMoveComp->SetMovementMode(MOVE_Walking);
+		//characterMovementComp->SetMovementMode(MOVE_Walking);
 	}
 }
 
@@ -58,4 +60,3 @@ void USDTPathFollowingComponent::UpdatePathSegment()
 	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Red, TEXT("UpdatePathSegment"));
 	Super::UpdatePathSegment();
 }
-

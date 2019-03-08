@@ -117,6 +117,7 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
 {
     //finish jump before updating AI state
 	if (AtJumpSegment) {
+		GetCharacter()->GetCharacterMovement()->JumpZVelocity = JumpApexHeight;
 		GetCharacter()->Jump();
 		AtJumpSegment = false;
 		return;
@@ -144,6 +145,15 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
     GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
 
     //Set behavior based on hit
+	AActor* target = detectionHit.GetActor();
+	if (target && target->IsA(ACharacter::StaticClass())) {
+		UNavigationPath* path = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), target->GetActorLocation());
+		if (path != nullptr && path->GetPath().IsValid() && !path->GetPath()->IsPartial()) {
+			m_Target = target;
+			m_PathFollowingComponent->RequestMove(path->GetPath());
+			m_ReachedTarget = false;
+		}
+	}
 
     DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
 }
