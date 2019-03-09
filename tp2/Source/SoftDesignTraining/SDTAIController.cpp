@@ -14,6 +14,7 @@
 #include <AI/Navigation/NavigationPath.h>
 #include <vector>
 #include <algorithm>
+#include "SoftDesignTrainingMainCharacter.h"
 
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
@@ -61,35 +62,27 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 
 void ASDTAIController::OnMoveToTarget()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, TEXT("OnMoveToTarget"));
     m_ReachedTarget = false;
 }
 
 void ASDTAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
     Super::OnMoveCompleted(RequestID, Result);
-	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, TEXT("OnMoveCompleted"));
 
     m_ReachedTarget = true;
 }
 
+void ASDTAIController::Jump() {
+	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, TEXT("Jump"));
+	initialHeight = GetCharacter()->GetActorLocation().Z;
+	jumpDuration = 0;
+	InAir = true;
+	Landing = false;
+	AtJumpSegment = true;
+}
+
 void ASDTAIController::ShowNavigationPath()
 {
-	/* TODO working example DELETE WHEN DONE
-	//const TArray<FNavPathPoint>& points = m_PathFollowingComponent->GetPath()->GetPathPoints();
-	TArray<FNavPathPoint>& points = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetActorLocation())->GetPath()->GetPathPoints();
-
-	FVector startPoint = points[0].Location;
-	FVector endPoint;
-	for (FNavPathPoint point : points) {
-		endPoint = point.Location;
-		DrawDebugLine(GetWorld(), startPoint, endPoint, FColor::Green);
-		DrawDebugSphere(GetWorld(), endPoint, 10.0f, 12, FColor::Red);
-		startPoint = endPoint;
-	}
-	*/
-
-
     //Show current navigation path DrawDebugLine and DrawDebugSphere
 	if (m_PathFollowingComponent->GetPath().IsValid()) {
 		const TArray<FNavPathPoint>& points = m_PathFollowingComponent->GetPath()->GetPathPoints();
@@ -117,9 +110,18 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
 {
     //finish jump before updating AI state
 	if (AtJumpSegment) {
-		GetCharacter()->GetCharacterMovement()->JumpZVelocity = JumpApexHeight;
-		GetCharacter()->Jump();
-		AtJumpSegment = false;
+		FVector position = GetCharacter()->GetActorLocation();
+		jumpDuration += deltaTime;
+
+		if (jumpDuration >= 1) {
+			Landing = true;
+			InAir = false;
+			AtJumpSegment = false;
+		}
+		else {
+			position.Z = initialHeight + JumpApexHeight * JumpCurve->GetFloatValue(jumpDuration);
+			GetCharacter()->SetActorLocation(position);
+		}
 		return;
 	}
 
@@ -127,35 +129,41 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
     if (!selfPawn)
         return;
 
-    ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+    ASoftDesignTrainingMainCharacter* playerCharacter = Cast<ASoftDesignTrainingMainCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
     if (!playerCharacter)
         return;
 
-    FVector detectionStartLocation = selfPawn->GetActorLocation() + selfPawn->GetActorForwardVector() * m_DetectionCapsuleForwardStartingOffset;
-    FVector detectionEndLocation = detectionStartLocation + selfPawn->GetActorForwardVector() * m_DetectionCapsuleHalfLength * 2;
-
-    TArray<TEnumAsByte<EObjectTypeQuery>> detectionTraceObjectTypes;
-    detectionTraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(COLLISION_COLLECTIBLE));
-    detectionTraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(COLLISION_PLAYER));
-
-    TArray<FHitResult> allDetectionHits;
-    GetWorld()->SweepMultiByObjectType(allDetectionHits, detectionStartLocation, detectionEndLocation, FQuat::Identity, detectionTraceObjectTypes, FCollisionShape::MakeSphere(m_DetectionCapsuleRadius));
-
-    FHitResult detectionHit;
-    GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
-
-    //Set behavior based on hit
-	AActor* target = detectionHit.GetActor();
-	if (target && target->IsA(ACharacter::StaticClass())) {
-		UNavigationPath* path = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), target->GetActorLocation());
-		if (path != nullptr && path->GetPath().IsValid() && !path->GetPath()->IsPartial()) {
-			m_Target = target;
-			m_PathFollowingComponent->RequestMove(path->GetPath());
-			m_ReachedTarget = false;
-		}
+	if (playerCharacter->IsPoweredUp()) {
+		TArray<AActor*> fleeSpots;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTFleeLocation::StaticClass(), fleeSpots);
 	}
+	else {
+		FVector detectionStartLocation = selfPawn->GetActorLocation() + selfPawn->GetActorForwardVector() * m_DetectionCapsuleForwardStartingOffset;
+		FVector detectionEndLocation = detectionStartLocation + selfPawn->GetActorForwardVector() * m_DetectionCapsuleHalfLength * 2;
 
-    DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
+		TArray<TEnumAsByte<EObjectTypeQuery>> detectionTraceObjectTypes;
+		detectionTraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(COLLISION_COLLECTIBLE));
+		detectionTraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(COLLISION_PLAYER));
+
+		TArray<FHitResult> allDetectionHits;
+		GetWorld()->SweepMultiByObjectType(allDetectionHits, detectionStartLocation, detectionEndLocation, FQuat::Identity, detectionTraceObjectTypes, FCollisionShape::MakeSphere(m_DetectionCapsuleRadius));
+
+		FHitResult detectionHit;
+		GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
+
+		//Set behavior based on hit
+		AActor* target = detectionHit.GetActor();
+		if (target && target->IsA(ACharacter::StaticClass())) {
+			UNavigationPath* path = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), target->GetActorLocation());
+			if (path != nullptr && path->GetPath().IsValid() && !path->GetPath()->IsPartial()) {
+				m_Target = target;
+				m_PathFollowingComponent->RequestMove(path->GetPath());
+				m_ReachedTarget = false;
+			}
+		}
+
+		DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
+	}
 }
 
 void ASDTAIController::GetHightestPriorityDetectionHit(const TArray<FHitResult>& hits, FHitResult& outDetectionHit)

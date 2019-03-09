@@ -27,12 +27,10 @@ void ASDTBaseAIController::Tick(float deltaTime)
 
     if (m_ReachedTarget)
     {
-		GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Red, TEXT("GoToBestTarget"));
         GoToBestTarget(deltaTime);
     }
     else
     {
-		GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Green, TEXT("ShowNavigationPath"));
         ShowNavigationPath();
     }
 }

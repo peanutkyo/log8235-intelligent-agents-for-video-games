@@ -32,7 +32,6 @@ void USDTPathFollowingComponent::FollowPathSegment(float DeltaTime)
 
 void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
 {
-	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Red, TEXT("SetMoveSegment"));
 	//https://wiki.unrealengine.com/Unreal_Engine_AI_Tutorial_-_1_-_Making_AI_Jump_as_a_Part_of_Path_Following
 
     Super::SetMoveSegment(segmentStartIndex);
@@ -45,7 +44,7 @@ void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
 	if (SDTUtils::HasJumpFlag(segmentStart) && FNavMeshNodeFlags(segmentStart.Flags).IsNavLink())
 	{
 		//Handle starting jump
-		Cast<ASDTAIController>(GetOwner())->AtJumpSegment = true;
+		Cast<ASDTAIController>(GetOwner())->Jump();
 		//characterMovementComp->SetMovementMode(MOVE_Flying);
 	}
 	else
@@ -57,6 +56,5 @@ void USDTPathFollowingComponent::SetMoveSegment(int32 segmentStartIndex)
 
 void USDTPathFollowingComponent::UpdatePathSegment()
 {
-	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Red, TEXT("UpdatePathSegment"));
 	Super::UpdatePathSegment();
 }

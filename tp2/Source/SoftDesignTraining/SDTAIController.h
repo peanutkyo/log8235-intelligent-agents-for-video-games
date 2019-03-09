@@ -44,9 +44,13 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
     bool Landing = false;
 
+	float jumpDuration;
+	float initialHeight;
+
 public:
     virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
     void AIStateInterrupted();
+	void Jump();
 
 protected:
     void OnMoveToTarget();

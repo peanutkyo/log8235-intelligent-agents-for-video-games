@@ -4,6 +4,7 @@
 #include "SDTAnimNotify_JumpEnd.h"
 #include "SDTAIController.h"
 #include "SoftDesignTrainingCharacter.h"
+#include <Engine/Engine.h>
 
 void USDTAnimNotify_JumpEnd::Notify(USkeletalMeshComponent * MeshComp, UAnimSequenceBase * Animation)
 {
