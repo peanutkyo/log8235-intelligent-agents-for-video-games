@@ -25,8 +25,15 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
     //Move to target depending on current behavior
+	if (IsFleeing) {
+		GotoSafestFleeSpot(deltaTime);
+	}
+	else {
+		GotoClosestCollectible(deltaTime);
+	}	
+}
 
-
+void ASDTAIController::GotoClosestCollectible(float deltaTime) {
 	// Find the nearest collectible target
 	TArray<AActor*> collectibles;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), collectibles);
@@ -39,7 +46,7 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 			orderedCollectibles.push_back(std::make_pair(i, pawn->GetDistanceTo(collectibles[i])));
 		}
 	}
-	
+
 	// sort the collectibles by their distance from the AI Pawn location
 	std::sort(orderedCollectibles.begin(), orderedCollectibles.end(), [](auto &left, auto &right) {
 		return left.second < right.second;
@@ -57,6 +64,31 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 			reachableCollectibleFound = true;
 		}
 		i++;
+	}
+}
+
+void ASDTAIController::GotoSafestFleeSpot(float deltaTime) {
+	ASoftDesignTrainingMainCharacter* playerCharacter = Cast<ASoftDesignTrainingMainCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	TArray<AActor*> fleeSpots;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTFleeLocation::StaticClass(), fleeSpots);
+
+	// add collectibles to a vector of pairs data struture
+	std::vector<std::pair<int, int>> orderedFleeSpots;
+	APawn* pawn = GetPawn();
+	for (int i = 0; i < fleeSpots.Num(); i++) {
+		orderedFleeSpots.push_back(std::make_pair(i, playerCharacter->GetDistanceTo(fleeSpots[i])));
+	}
+
+	// sort the collectibles by their distance from the AI Pawn location
+	std::sort(orderedFleeSpots.begin(), orderedFleeSpots.end(), [](auto &left, auto &right) {
+		return left.second > right.second;
+	});
+
+	UNavigationPath* path = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), fleeSpots[orderedFleeSpots[0].first]->GetActorLocation());
+	if (path != nullptr && path->GetPath().IsValid() && !path->GetPath()->IsPartial()) {
+		m_PathFollowingComponent->RequestMove(path->GetPath());
+		m_ReachedTarget = false;
 	}
 }
 
@@ -126,19 +158,22 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
 	}
 
     APawn* selfPawn = GetPawn();
-    if (!selfPawn)
-        return;
+	if (!selfPawn) {
+		return;
+	}
 
     ASoftDesignTrainingMainCharacter* playerCharacter = Cast<ASoftDesignTrainingMainCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-    if (!playerCharacter)
-        return;
+	if (!playerCharacter) {
+		return;
+	}
 
 	if (playerCharacter->IsPoweredUp()) {
 		// fleeing behavior
-		TArray<AActor*> fleeSpots;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTFleeLocation::StaticClass(), fleeSpots);
+		IsFleeing = true;
 	}
 	else {
+		IsFleeing = false;
+
 		// chase player behavior
 		FVector detectionStartLocation = selfPawn->GetActorLocation() + selfPawn->GetActorForwardVector() * m_DetectionCapsuleForwardStartingOffset;
 		FVector detectionEndLocation = detectionStartLocation + selfPawn->GetActorForwardVector() * m_DetectionCapsuleHalfLength * 2;

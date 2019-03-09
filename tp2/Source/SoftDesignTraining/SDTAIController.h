@@ -46,11 +46,14 @@ public:
 
 	float jumpDuration;
 	float initialHeight;
+	bool IsFleeing = false;
 
 public:
     virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
     void AIStateInterrupted();
 	void Jump();
+	void OnFlee();
+	void StopFleeing();
 
 protected:
     void OnMoveToTarget();
@@ -61,4 +64,7 @@ private:
     virtual void GoToBestTarget(float deltaTime) override;
     virtual void ChooseBehavior(float deltaTime) override;
     virtual void ShowNavigationPath() override;
+
+	void GotoClosestCollectible(float deltaTime);
+	void GotoSafestFleeSpot(float deltaTime);
 };
