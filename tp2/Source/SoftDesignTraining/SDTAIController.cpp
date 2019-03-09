@@ -134,10 +134,12 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
         return;
 
 	if (playerCharacter->IsPoweredUp()) {
+		// fleeing behavior
 		TArray<AActor*> fleeSpots;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTFleeLocation::StaticClass(), fleeSpots);
 	}
 	else {
+		// chase player behavior
 		FVector detectionStartLocation = selfPawn->GetActorLocation() + selfPawn->GetActorForwardVector() * m_DetectionCapsuleForwardStartingOffset;
 		FVector detectionEndLocation = detectionStartLocation + selfPawn->GetActorForwardVector() * m_DetectionCapsuleHalfLength * 2;
 
