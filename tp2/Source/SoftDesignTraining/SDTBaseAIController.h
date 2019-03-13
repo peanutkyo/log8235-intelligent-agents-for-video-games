@@ -26,7 +26,6 @@ protected:
     virtual void ImpulseToDirection(float deltaTime) {};
 
     bool m_ReachedTarget;
-	AActor* m_Target;
 	USDTPathFollowingComponent* m_PathFollowingComponent;
 private:
 
