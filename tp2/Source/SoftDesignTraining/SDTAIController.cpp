@@ -53,17 +53,16 @@ void ASDTAIController::GotoClosestCollectible(float deltaTime) {
 	});
 
 	// Set as target the first closest and reachable collectible
-	bool reachableCollectibleFound = false;
 	int i = 0;
-	while (!reachableCollectibleFound && i < orderedCollectibles.size()) {
-		UNavigationPath* path = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), collectibles[orderedCollectibles[i].first]->GetActorLocation());
-		if (path != nullptr && path->GetPath().IsValid() && !path->GetPath()->IsPartial()) {
-			m_Target = collectibles[i];
-			m_PathFollowingComponent->RequestMove(path->GetPath());
-			m_ReachedTarget = false;
-			reachableCollectibleFound = true;
-		}
+	EPathFollowingRequestResult::Type result;
+	do {
+		result = MoveToActor(collectibles[orderedCollectibles[i].first]);
 		i++;
+	}
+	while (result != EPathFollowingRequestResult::RequestSuccessful || i >= collectibles.Num());
+
+	if (result == EPathFollowingRequestResult::RequestSuccessful) {
+		OnMoveToTarget();
 	}
 }
 
@@ -73,22 +72,28 @@ void ASDTAIController::GotoSafestFleeSpot(float deltaTime) {
 	TArray<AActor*> fleeSpots;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTFleeLocation::StaticClass(), fleeSpots);
 
-	// add collectibles to a vector of pairs data struture
+	// add fleespots to a vector of pairs data struture
 	std::vector<std::pair<int, int>> orderedFleeSpots;
 	APawn* pawn = GetPawn();
 	for (int i = 0; i < fleeSpots.Num(); i++) {
 		orderedFleeSpots.push_back(std::make_pair(i, playerCharacter->GetDistanceTo(fleeSpots[i])));
 	}
 
-	// sort the collectibles by their distance from the AI Pawn location
+	// sort the fleespots by their distance from the player location
 	std::sort(orderedFleeSpots.begin(), orderedFleeSpots.end(), [](auto &left, auto &right) {
 		return left.second > right.second;
 	});
 
-	UNavigationPath* path = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), fleeSpots[orderedFleeSpots[0].first]->GetActorLocation());
-	if (path != nullptr && path->GetPath().IsValid() && !path->GetPath()->IsPartial()) {
-		m_PathFollowingComponent->RequestMove(path->GetPath());
-		m_ReachedTarget = false;
+	// Set as target the furthest flee spot from the player
+	int i = 0;
+	EPathFollowingRequestResult::Type result;
+	do {
+		result = MoveToActor(fleeSpots[orderedFleeSpots[i].first]);
+		i++;
+	} while (result != EPathFollowingRequestResult::RequestSuccessful || i >= fleeSpots.Num());
+
+	if (result == EPathFollowingRequestResult::RequestSuccessful) {
+		OnMoveToTarget();
 	}
 }
 
@@ -99,12 +104,15 @@ void ASDTAIController::OnMoveToTarget()
 
 void ASDTAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, TEXT("OnMoveCompleted"));
     Super::OnMoveCompleted(RequestID, Result);
 
     m_ReachedTarget = true;
 }
 
 void ASDTAIController::Jump() {
+	if (AtJumpSegment) return;
+
 	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, TEXT("Jump"));
 	initialHeight = GetCharacter()->GetActorLocation().Z;
 	jumpDuration = 0;
@@ -140,25 +148,29 @@ void ASDTAIController::ChooseBehavior(float deltaTime)
 
 void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
 {
+	APawn* selfPawn = GetPawn();
+	if (!selfPawn) {
+		return;
+	}
+
     //finish jump before updating AI state
 	if (AtJumpSegment) {
-		FVector position = GetCharacter()->GetActorLocation();
+		FVector position = selfPawn->GetActorLocation();
 		jumpDuration += deltaTime;
 
-		if (jumpDuration >= 1) {
+		float min, max;
+		JumpCurve->GetTimeRange(min, max);
+		if (jumpDuration >= max) {
+			// jump finished
 			Landing = true;
 			InAir = false;
 			AtJumpSegment = false;
 		}
 		else {
+			// change ai jump height following the provided jump curve
 			position.Z = initialHeight + JumpApexHeight * JumpCurve->GetFloatValue(jumpDuration);
 			GetCharacter()->SetActorLocation(position);
 		}
-		return;
-	}
-
-    APawn* selfPawn = GetPawn();
-	if (!selfPawn) {
 		return;
 	}
 
@@ -167,39 +179,42 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
 		return;
 	}
 
-	if (playerCharacter->IsPoweredUp()) {
-		// fleeing behavior
-		IsFleeing = true;
-	}
-	else {
+	// trigger normal behavior (chase player or find collectibles)
+	if (IsFleeing && !playerCharacter->IsPoweredUp()) {
 		IsFleeing = false;
+		AIStateInterrupted();
+	}
 
-		// chase player behavior
-		FVector detectionStartLocation = selfPawn->GetActorLocation() + selfPawn->GetActorForwardVector() * m_DetectionCapsuleForwardStartingOffset;
-		FVector detectionEndLocation = detectionStartLocation + selfPawn->GetActorForwardVector() * m_DetectionCapsuleHalfLength * 2;
+	// trigger flee behavior
+	if (!IsFleeing && playerCharacter->IsPoweredUp()) {
+		IsFleeing = true;
+		AIStateInterrupted();
+	}
 
-		TArray<TEnumAsByte<EObjectTypeQuery>> detectionTraceObjectTypes;
-		detectionTraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(COLLISION_COLLECTIBLE));
-		detectionTraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(COLLISION_PLAYER));
+	// chase player behavior
+	FVector detectionStartLocation = selfPawn->GetActorLocation() + selfPawn->GetActorForwardVector() * m_DetectionCapsuleForwardStartingOffset;
+	FVector detectionEndLocation = detectionStartLocation + selfPawn->GetActorForwardVector() * m_DetectionCapsuleHalfLength * 2;
 
-		TArray<FHitResult> allDetectionHits;
-		GetWorld()->SweepMultiByObjectType(allDetectionHits, detectionStartLocation, detectionEndLocation, FQuat::Identity, detectionTraceObjectTypes, FCollisionShape::MakeSphere(m_DetectionCapsuleRadius));
+	TArray<TEnumAsByte<EObjectTypeQuery>> detectionTraceObjectTypes;
+	detectionTraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(COLLISION_COLLECTIBLE));
+	detectionTraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(COLLISION_PLAYER));
 
-		FHitResult detectionHit;
-		GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
+	TArray<FHitResult> allDetectionHits;
+	GetWorld()->SweepMultiByObjectType(allDetectionHits, detectionStartLocation, detectionEndLocation, FQuat::Identity, detectionTraceObjectTypes, FCollisionShape::MakeSphere(m_DetectionCapsuleRadius));
 
-		//Set behavior based on hit
-		AActor* target = detectionHit.GetActor();
-		if (target && target->IsA(ACharacter::StaticClass())) {
-			UNavigationPath* path = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), target->GetActorLocation());
-			if (path != nullptr && path->GetPath().IsValid() && !path->GetPath()->IsPartial()) {
-				m_Target = target;
-				m_PathFollowingComponent->RequestMove(path->GetPath());
-				m_ReachedTarget = false;
-			}
+	FHitResult detectionHit;
+	GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
+
+	DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
+
+	if (IsFleeing) return;
+
+	//Set behavior based on hit
+	AActor* target = detectionHit.GetActor();
+	if (target && target->IsA(ACharacter::StaticClass())) {
+		if (MoveToActor(target) == EPathFollowingRequestResult::RequestSuccessful) {
+			OnMoveToTarget();
 		}
-
-		DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
 	}
 }
 
