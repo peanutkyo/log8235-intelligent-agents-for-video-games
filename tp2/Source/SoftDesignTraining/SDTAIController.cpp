@@ -56,7 +56,7 @@ void ASDTAIController::GotoClosestCollectible(float deltaTime) {
 	int i = 0;
 	EPathFollowingRequestResult::Type result;
 	do {
-		result = MoveToActor(collectibles[orderedCollectibles[i].first]);
+		result = MoveToLocation(collectibles[orderedCollectibles[i].first]->GetActorLocation());
 		i++;
 	}
 	while (result != EPathFollowingRequestResult::RequestSuccessful || i >= collectibles.Num());
@@ -88,7 +88,7 @@ void ASDTAIController::GotoSafestFleeSpot(float deltaTime) {
 	int i = 0;
 	EPathFollowingRequestResult::Type result;
 	do {
-		result = MoveToActor(fleeSpots[orderedFleeSpots[i].first]);
+		result = MoveToLocation(fleeSpots[orderedFleeSpots[i].first]->GetActorLocation());
 		i++;
 	} while (result != EPathFollowingRequestResult::RequestSuccessful || i >= fleeSpots.Num());
 
@@ -104,7 +104,6 @@ void ASDTAIController::OnMoveToTarget()
 
 void ASDTAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, TEXT("OnMoveCompleted"));
     Super::OnMoveCompleted(RequestID, Result);
 
     m_ReachedTarget = true;
@@ -113,7 +112,6 @@ void ASDTAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollow
 void ASDTAIController::Jump() {
 	if (AtJumpSegment) return;
 
-	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Yellow, TEXT("Jump"));
 	initialHeight = GetCharacter()->GetActorLocation().Z;
 	jumpDuration = 0;
 	InAir = true;
@@ -212,7 +210,7 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
 	//Set behavior based on hit
 	AActor* target = detectionHit.GetActor();
 	if (target && target->IsA(ACharacter::StaticClass())) {
-		if (MoveToActor(target) == EPathFollowingRequestResult::RequestSuccessful) {
+		if (MoveToLocation(target->GetActorLocation()) == EPathFollowingRequestResult::RequestSuccessful) {
 			OnMoveToTarget();
 		}
 	}
