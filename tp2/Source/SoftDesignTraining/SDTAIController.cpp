@@ -43,7 +43,8 @@ void ASDTAIController::GotoClosestCollectible(float deltaTime) {
 	APawn* pawn = GetPawn();
 	for (int i = 0; i < collectibles.Num(); i++) {
 		if (!Cast<ASDTCollectible>(collectibles[i])->IsOnCooldown()) {
-			orderedCollectibles.push_back(std::make_pair(i, pawn->GetDistanceTo(collectibles[i])));
+			float pathLength = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), GetPawn()->GetActorLocation(), collectibles[i]->GetActorLocation())->GetPathLength();
+			orderedCollectibles.push_back(std::make_pair(i, pathLength));
 		}
 	}
 
@@ -76,7 +77,8 @@ void ASDTAIController::GotoSafestFleeSpot(float deltaTime) {
 	std::vector<std::pair<int, int>> orderedFleeSpots;
 	APawn* pawn = GetPawn();
 	for (int i = 0; i < fleeSpots.Num(); i++) {
-		orderedFleeSpots.push_back(std::make_pair(i, playerCharacter->GetDistanceTo(fleeSpots[i])));
+		float pathLength = UNavigationSystem::FindPathToLocationSynchronously(GetWorld(), playerCharacter->GetActorLocation(), fleeSpots[i]->GetActorLocation())->GetPathLength();
+		orderedFleeSpots.push_back(std::make_pair(i, pathLength));
 	}
 
 	// sort the fleespots by their distance from the player location
