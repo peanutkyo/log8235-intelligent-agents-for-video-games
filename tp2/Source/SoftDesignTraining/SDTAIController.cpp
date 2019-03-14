@@ -136,9 +136,6 @@ void ASDTAIController::ShowNavigationPath()
 			startPoint = endPoint;
 		}
 	}
-	else {
-		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, TEXT("Invalid Path"));
-	}
 }
 
 void ASDTAIController::ChooseBehavior(float deltaTime)

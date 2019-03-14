@@ -52,8 +52,6 @@ public:
     virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
     void AIStateInterrupted();
 	void Jump();
-	void OnFlee();
-	void StopFleeing();
 
 protected:
     void OnMoveToTarget();
