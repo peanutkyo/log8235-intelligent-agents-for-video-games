@@ -65,4 +65,5 @@ private:
 
 	void GotoClosestCollectible(float deltaTime);
 	void GotoSafestFleeSpot(float deltaTime);
+	void OnUpdateJump(float deltaTime);
 };

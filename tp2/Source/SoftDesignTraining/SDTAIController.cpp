@@ -99,6 +99,26 @@ void ASDTAIController::GotoSafestFleeSpot(float deltaTime) {
 	}
 }
 
+void ASDTAIController::OnUpdateJump(float deltaTime)
+{
+	FVector position = GetPawn()->GetActorLocation();
+	jumpDuration += deltaTime;
+
+	float min, max;
+	JumpCurve->GetTimeRange(min, max);
+	if (jumpDuration >= max) {
+		// jump finished
+		Landing = true;
+		InAir = false;
+		AtJumpSegment = false;
+	}
+	else {
+		// change ai jump height following the provided jump curve
+		position.Z = initialHeight + JumpApexHeight * JumpCurve->GetFloatValue(jumpDuration);
+		GetCharacter()->SetActorLocation(position);
+	}
+}
+
 void ASDTAIController::OnMoveToTarget()
 {
     m_ReachedTarget = false;
@@ -145,29 +165,14 @@ void ASDTAIController::ChooseBehavior(float deltaTime)
 
 void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
 {
-	APawn* selfPawn = GetPawn();
-	if (!selfPawn) {
+    //finish jump before updating AI state
+	if (AtJumpSegment) {
+		OnUpdateJump(deltaTime);
 		return;
 	}
 
-    //finish jump before updating AI state
-	if (AtJumpSegment) {
-		FVector position = selfPawn->GetActorLocation();
-		jumpDuration += deltaTime;
-
-		float min, max;
-		JumpCurve->GetTimeRange(min, max);
-		if (jumpDuration >= max) {
-			// jump finished
-			Landing = true;
-			InAir = false;
-			AtJumpSegment = false;
-		}
-		else {
-			// change ai jump height following the provided jump curve
-			position.Z = initialHeight + JumpApexHeight * JumpCurve->GetFloatValue(jumpDuration);
-			GetCharacter()->SetActorLocation(position);
-		}
+	APawn* selfPawn = GetPawn();
+	if (!selfPawn) {
 		return;
 	}
 
@@ -204,7 +209,9 @@ void ASDTAIController::UpdatePlayerInteraction(float deltaTime)
 
 	DrawDebugCapsule(GetWorld(), detectionStartLocation + m_DetectionCapsuleHalfLength * selfPawn->GetActorForwardVector(), m_DetectionCapsuleHalfLength, m_DetectionCapsuleRadius, selfPawn->GetActorQuat() * selfPawn->GetActorUpVector().ToOrientationQuat(), FColor::Blue);
 
-	if (IsFleeing) return;
+	if (IsFleeing) {
+		return;
+	}
 
 	//Set behavior based on hit
 	AActor* target = detectionHit.GetActor();
