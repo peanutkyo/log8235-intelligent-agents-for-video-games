@@ -2,6 +2,8 @@
 
 #include "SoftDesignTraining.h"
 #include "SDTBaseAIController.h"
+#include "SoftDesignTrainingCharacter.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 
 
 ASDTBaseAIController::ASDTBaseAIController(const FObjectInitializer& ObjectInitializer)
@@ -10,13 +12,17 @@ ASDTBaseAIController::ASDTBaseAIController(const FObjectInitializer& ObjectIniti
     PrimaryActorTick.bCanEverTick = true;
     PrimaryActorTick.bStartWithTickEnabled = true;
     m_ReachedTarget = true;
+
+	// BT_AI
+	m_behaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
+	m_blackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 }
 
 void ASDTBaseAIController::Tick(float deltaTime)
 {
     Super::Tick(deltaTime);
 
-    UpdatePlayerInteraction(deltaTime);
+    /*UpdatePlayerInteraction(deltaTime);
 
     if (m_ReachedTarget)
     {
@@ -25,7 +31,50 @@ void ASDTBaseAIController::Tick(float deltaTime)
     else
     {
         ShowNavigationPath();
-    }
+    }*/
+}
+
+void ASDTBaseAIController::StartBehaviorTree(APawn* pawn)
+{
+	if (ASoftDesignTrainingCharacter* aiBaseCharacter = Cast<ASoftDesignTrainingCharacter>(pawn))
+	{
+		if (aiBaseCharacter->GetBehaviorTree())
+		{
+			m_behaviorTreeComponent->StartTree(*aiBaseCharacter->GetBehaviorTree());
+		}
+	}
+}
+
+void ASDTBaseAIController::StopBehaviorTree(APawn* pawn)
+{
+	if (ASoftDesignTrainingCharacter* aiBaseCharacter = Cast<ASoftDesignTrainingCharacter>(pawn))
+	{
+		if (aiBaseCharacter->GetBehaviorTree())
+		{
+			m_behaviorTreeComponent->StopTree();
+		}
+	}
+}
+
+void ASDTBaseAIController::Possess(APawn* pawn)
+{
+	Super::Possess(pawn);
+
+	if (ASoftDesignTrainingCharacter* aiBaseCharacter = Cast<ASoftDesignTrainingCharacter>(pawn))
+	{
+		if (aiBaseCharacter->GetBehaviorTree())
+		{
+			m_blackboardComponent->InitializeBlackboard(*aiBaseCharacter->GetBehaviorTree()->BlackboardAsset);
+
+			m_targetPosBBKeyID = m_blackboardComponent->GetKeyID("TargetPos");
+			m_isTargetSeenBBKeyID = m_blackboardComponent->GetKeyID("TargetIsSeen");
+			m_nextPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("NextPatrolDest");
+			m_currentPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("CurrentPatrolDest");
+
+			//Set this agent in the BT
+			m_blackboardComponent->SetValue<UBlackboardKeyType_Object>(m_blackboardComponent->GetKeyID("SelfActor"), pawn);
+		}
+	}
 }
 
 
