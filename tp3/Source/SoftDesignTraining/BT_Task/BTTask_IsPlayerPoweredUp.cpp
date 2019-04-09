@@ -7,6 +7,7 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "AI/Navigation/NavigationSystem.h"
+#include "SDTUtils.h"
 
 #include "BTTask_IsPlayerPoweredUp.h"
 
@@ -15,6 +16,9 @@
 
 EBTNodeResult::Type UBTTask_IsPlayerPoweredUp::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	if (SDTUtils::IsPlayerPoweredUp(GetWorld())) {
+		return EBTNodeResult::Succeeded;
+	}
     return EBTNodeResult::Failed;
 }
 
