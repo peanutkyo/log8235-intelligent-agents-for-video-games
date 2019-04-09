@@ -6,23 +6,23 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
-#include "BehaviorTree/Blackboard/BlackboardKeyType_String.h"
 #include "AI/Navigation/NavigationSystem.h"
-#include "SDTUtils.h"
 
-#include "BTTask_IsPlayerPoweredUp.h"
-
+#include "BTTask_FindPlayer.h"
 
 
 
-EBTNodeResult::Type UBTTask_IsPlayerPoweredUp::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+
+EBTNodeResult::Type UBTTask_FindPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
-		if (SDTUtils::IsPlayerPoweredUp(GetWorld())) {
-			OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_String>(aiController->GetDebugStateKeyID(), "Flee");
+		ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+		if (playerCharacter) {
+			OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Vector>(aiController->GetTargetPosBBKeyID(), playerCharacter->GetTargetLocation());
 			return EBTNodeResult::Succeeded;
 		}
 	}
+
     return EBTNodeResult::Failed;
 }
 

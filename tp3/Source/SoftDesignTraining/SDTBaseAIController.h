@@ -28,8 +28,7 @@ public:
 
 	uint8                   GetTargetPosBBKeyID() const { return m_targetPosBBKeyID; }
 	uint8                   GetTargetSeenKeyID() const { return m_isTargetSeenBBKeyID; }
-	uint8                   GetNextPatrolDestinationKeyID() const { return m_nextPatrolDestinationBBKeyID; }
-	uint8                   GetCurrentPatrolDestinationKeyID() const { return m_currentPatrolDestinationBBKeyID; }
+	uint8                   GetDebugStateKeyID() const { return m_debugStateBBKeyID; }
 
 	void                    StartBehaviorTree(APawn* pawn);
 	void                    StopBehaviorTree(APawn* pawn);
@@ -58,6 +57,5 @@ private:
 
 	uint8   m_targetPosBBKeyID;
 	uint8   m_isTargetSeenBBKeyID;
-	uint8   m_nextPatrolDestinationBBKeyID;
-	uint8   m_currentPatrolDestinationBBKeyID;
+	uint8	m_debugStateBBKeyID;
 };

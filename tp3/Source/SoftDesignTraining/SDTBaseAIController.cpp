@@ -68,8 +68,7 @@ void ASDTBaseAIController::Possess(APawn* pawn)
 
 			m_targetPosBBKeyID = m_blackboardComponent->GetKeyID("TargetPos");
 			m_isTargetSeenBBKeyID = m_blackboardComponent->GetKeyID("TargetIsSeen");
-			m_nextPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("NextPatrolDest");
-			m_currentPatrolDestinationBBKeyID = m_blackboardComponent->GetKeyID("CurrentPatrolDest");
+			m_debugStateBBKeyID = m_blackboardComponent->GetKeyID("DebugState");
 
 			//Set this agent in the BT
 			m_blackboardComponent->SetValue<UBlackboardKeyType_Object>(m_blackboardComponent->GetKeyID("SelfActor"), pawn);
