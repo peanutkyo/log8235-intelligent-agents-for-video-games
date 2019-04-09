@@ -7,7 +7,6 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_String.h"
-#include "AI/Navigation/NavigationSystem.h"
 #include "SDTUtils.h"
 
 #include "BTTask_IsPlayerUnseen.h"
