@@ -3,6 +3,8 @@
 #include "SoftDesignTraining.h"
 #include "SoftDesignTrainingCharacter.h"
 #include "SoftDesignTrainingMainCharacter.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_String.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
 #include "SDTAIController.h"
 #include "SDTProjectile.h"
 #include "SDTUtils.h"
@@ -26,6 +28,8 @@ void ASoftDesignTrainingCharacter::BeginPlay()
 	// BT_AI
 	if (ASDTBaseAIController* aiController = Cast<ASDTBaseAIController>(GetController()))
 	{
+		aiController->GetBlackBoardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), true);
+		aiController->GetBlackBoardComponent()->SetValue<UBlackboardKeyType_String>(aiController->GetStateBBKeyID(), "Collect");
 		aiController->StartBehaviorTree(this);
 	}
 }

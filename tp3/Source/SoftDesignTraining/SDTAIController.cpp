@@ -10,6 +10,7 @@
 #include "UnrealMathUtility.h"
 #include "SDTUtils.h"
 #include "EngineUtils.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
@@ -204,6 +205,7 @@ void ASDTAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollow
 {
     Super::OnMoveCompleted(RequestID, Result);
 
+	GetBlackBoardComponent()->SetValue<UBlackboardKeyType_Bool>(GetReachedTargetKeyID(), true);
     m_ReachedTarget = true;
 }
 
