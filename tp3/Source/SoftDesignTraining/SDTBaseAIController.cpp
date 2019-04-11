@@ -32,6 +32,10 @@ void ASDTBaseAIController::Tick(float deltaTime)
     {
         ShowNavigationPath();
     }*/
+
+	if (!m_ReachedTarget) {
+		ShowNavigationPath();
+	}
 }
 
 void ASDTBaseAIController::StartBehaviorTree(APawn* pawn)

@@ -20,7 +20,7 @@ EBTNodeResult::Type UBTTask_MoveToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 		if (!playerCharacter)
 			return EBTNodeResult::Failed;
 
-		aiController->MoveToActor(playerCharacter, 0.5f, false, true, true, NULL, false);
+		aiController->MoveToLocation(playerCharacter->GetTargetLocation(), 0.5f, false, true, true, NULL, false);
 
 		OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
 		return EBTNodeResult::Succeeded;
