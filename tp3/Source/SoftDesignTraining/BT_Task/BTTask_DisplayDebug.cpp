@@ -19,7 +19,7 @@
 
 EBTNodeResult::Type UBTTask_DisplayDebug::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
+	/*if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
 		APawn* pawn = aiController->GetPawn();
 		FString debugString = OwnerComp.GetBlackboardComponent()->GetValue<UBlackboardKeyType_String>(aiController->GetDebugStateKeyID());
 		FVector detectionStartLocation = pawn->GetActorLocation() + pawn->GetActorForwardVector() * aiController->m_DetectionCapsuleForwardStartingOffset;
@@ -50,7 +50,7 @@ EBTNodeResult::Type UBTTask_DisplayDebug::ExecuteTask(UBehaviorTreeComponent& Ow
 				}
 			}
 		}
-	}
+	}*/
 
     return EBTNodeResult::Succeeded;
 }

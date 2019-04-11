@@ -17,8 +17,45 @@
 EBTNodeResult::Type UBTTask_IsPlayerSeen::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
-		if (aiController->IsPlayerSeen()) {
+		/*if (aiController->IsPlayerSeen()) {
 			return EBTNodeResult::Succeeded;
+		}*/
+
+		//finish jump before updating AI state
+		if (aiController->AtJumpSegment)
+			return EBTNodeResult::Failed;
+
+		APawn* selfPawn = aiController->GetPawn();
+		if (!selfPawn)
+			return EBTNodeResult::Failed;
+
+		ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+		if (!playerCharacter)
+			return EBTNodeResult::Failed;
+
+		FVector detectionStartLocation = selfPawn->GetActorLocation() + selfPawn->GetActorForwardVector() * aiController->m_DetectionCapsuleForwardStartingOffset;
+		FVector detectionEndLocation = detectionStartLocation + selfPawn->GetActorForwardVector() * aiController->m_DetectionCapsuleHalfLength * 2;
+
+		TArray<TEnumAsByte<EObjectTypeQuery>> detectionTraceObjectTypes;
+		detectionTraceObjectTypes.Add(UEngineTypes::ConvertToObjectType(COLLISION_PLAYER));
+
+		TArray<FHitResult> allDetectionHits;
+		GetWorld()->SweepMultiByObjectType(allDetectionHits, detectionStartLocation, detectionEndLocation, FQuat::Identity, detectionTraceObjectTypes, FCollisionShape::MakeSphere(aiController->m_DetectionCapsuleRadius));
+
+		FHitResult detectionHit;
+		//GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
+		for (const FHitResult& hit : allDetectionHits)
+		{
+			if (UPrimitiveComponent* component = hit.GetComponent())
+			{
+				if (component && component->GetCollisionObjectType() == COLLISION_PLAYER)
+				{
+					//aiController->SetTargetReached(true);
+					OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), true);
+
+					return EBTNodeResult::Succeeded;
+				}
+			}
 		}
 	}
 

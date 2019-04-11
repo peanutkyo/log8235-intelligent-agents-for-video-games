@@ -15,7 +15,7 @@
 
 EBTNodeResult::Type UBTTask_MoveToTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-    if (const UBlackboardComponent* MyBlackboard = OwnerComp.GetBlackboardComponent())
+    /*if (const UBlackboardComponent* MyBlackboard = OwnerComp.GetBlackboardComponent())
     {
         if (ASDTBaseAIController* aiController = Cast<ASDTBaseAIController>(OwnerComp.GetAIOwner()))
         {
@@ -42,7 +42,7 @@ EBTNodeResult::Type UBTTask_MoveToTarget::ExecuteTask(UBehaviorTreeComponent& Ow
 
             return EBTNodeResult::Succeeded;
         }
-    }    
+    }    */
 
     return EBTNodeResult::Failed;
 }

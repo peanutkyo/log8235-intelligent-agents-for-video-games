@@ -18,9 +18,44 @@
 EBTNodeResult::Type UBTTask_MoveToRandomCollectible::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
-		if (aiController->IsTargetReached()) {
+		//if (aiController->IsTargetReached()) {
+		if (OwnerComp.GetBlackboardComponent()->GetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID())) {
+			//OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
+			/*aiController->SetTargetReached(false);
 			aiController->MoveToRandomCollectible();
-			return EBTNodeResult::Succeeded;
+			return EBTNodeResult::Succeeded;*/
+
+
+
+
+			float closestSqrCollectibleDistance = 18446744073709551610.f;
+			ASDTCollectible* closestCollectible = nullptr;
+
+			TArray<AActor*> foundCollectibles;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASDTCollectible::StaticClass(), foundCollectibles);
+
+			while (foundCollectibles.Num() != 0)
+			{
+				int index = FMath::RandRange(0, foundCollectibles.Num() - 1);
+
+				ASDTCollectible* collectibleActor = Cast<ASDTCollectible>(foundCollectibles[index]);
+				if (!collectibleActor)
+					return EBTNodeResult::Failed;
+
+				if (!collectibleActor->IsOnCooldown())
+				{
+					aiController->MoveToLocation(foundCollectibles[index]->GetActorLocation(), 0.5f, false, true, true, NULL, false);
+					//aiController->SetTargetReached(false);
+					OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
+
+					return EBTNodeResult::Succeeded;
+				}
+				else
+				{
+					foundCollectibles.RemoveAt(index);
+				}
+			}
+
 		}
 	}
 
