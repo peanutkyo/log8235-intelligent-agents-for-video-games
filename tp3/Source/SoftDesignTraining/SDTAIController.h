@@ -74,6 +74,7 @@ public:
 	bool IsTargetReached() { return m_ReachedTarget; }
 	void SetTargetReached(bool targetReached) { m_ReachedTarget = targetReached; }
 	bool IsPlayerSeen();
+	void MoveTo(FVector location);
 
 private:
     virtual void GoToBestTarget(float deltaTime) override;

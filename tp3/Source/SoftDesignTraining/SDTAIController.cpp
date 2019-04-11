@@ -398,3 +398,8 @@ bool ASDTAIController::IsPlayerSeen() {
 
 	return false;
 }
+
+void ASDTAIController::MoveTo(FVector location) {
+	MoveToLocation(location, 0.5f, false, true, true, NULL, false);
+	OnMoveToTarget();
+}
