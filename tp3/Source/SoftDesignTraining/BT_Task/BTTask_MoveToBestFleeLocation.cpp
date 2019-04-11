@@ -17,17 +17,6 @@ EBTNodeResult::Type UBTTask_MoveToBestFleeLocation::ExecuteTask(UBehaviorTreeCom
 {
 	if (const UBlackboardComponent* MyBlackboard = OwnerComp.GetBlackboardComponent()) {
 		if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
-			//OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
-			/*aiController->SetTargetReached(false);
-
-			aiController->MoveToBestFleeLocation();
-
-			return EBTNodeResult::Succeeded;*/
-
-
-
-
-
 			float bestLocationScore = 0.f;
 			ASDTFleeLocation* bestFleeLocation = nullptr;
 
@@ -68,9 +57,8 @@ EBTNodeResult::Type UBTTask_MoveToBestFleeLocation::ExecuteTask(UBehaviorTreeCom
 			if (bestFleeLocation)
 			{
 				aiController->MoveToLocation(bestFleeLocation->GetActorLocation(), 0.5f, false, true, false, NULL, false);
-				//aiController->SetTargetReached(false);
-				OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
 
+				OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
 				return EBTNodeResult::Succeeded;
 			}
 		}

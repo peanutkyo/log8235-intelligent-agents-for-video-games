@@ -17,10 +17,6 @@
 EBTNodeResult::Type UBTTask_IsPlayerSeen::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
-		/*if (aiController->IsPlayerSeen()) {
-			return EBTNodeResult::Succeeded;
-		}*/
-
 		//finish jump before updating AI state
 		if (aiController->AtJumpSegment)
 			return EBTNodeResult::Failed;
@@ -42,15 +38,12 @@ EBTNodeResult::Type UBTTask_IsPlayerSeen::ExecuteTask(UBehaviorTreeComponent& Ow
 		TArray<FHitResult> allDetectionHits;
 		GetWorld()->SweepMultiByObjectType(allDetectionHits, detectionStartLocation, detectionEndLocation, FQuat::Identity, detectionTraceObjectTypes, FCollisionShape::MakeSphere(aiController->m_DetectionCapsuleRadius));
 
-		FHitResult detectionHit;
-		//GetHightestPriorityDetectionHit(allDetectionHits, detectionHit);
 		for (const FHitResult& hit : allDetectionHits)
 		{
 			if (UPrimitiveComponent* component = hit.GetComponent())
 			{
 				if (component && component->GetCollisionObjectType() == COLLISION_PLAYER)
 				{
-					//aiController->SetTargetReached(true);
 					OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), true);
 
 					return EBTNodeResult::Succeeded;

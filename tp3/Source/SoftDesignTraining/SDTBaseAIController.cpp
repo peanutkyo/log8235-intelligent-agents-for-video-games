@@ -66,7 +66,6 @@ void ASDTBaseAIController::Possess(APawn* pawn)
 		{
 			m_blackboardComponent->InitializeBlackboard(*aiBaseCharacter->GetBehaviorTree()->BlackboardAsset);
 
-			m_stateBBKeyID = m_blackboardComponent->GetKeyID("State");
 			m_reachedTargetBBKeyID = m_blackboardComponent->GetKeyID("ReachedTarget");
 
 			//Set this agent in the BT

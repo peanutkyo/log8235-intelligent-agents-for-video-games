@@ -16,24 +16,13 @@
 EBTNodeResult::Type UBTTask_MoveToPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
-		//OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
-		/*aiController->SetTargetReached(false);
-		aiController->MoveToPlayer();
-		return EBTNodeResult::Succeeded;*/
-
-
-
-
-
-
 		ACharacter * playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 		if (!playerCharacter)
 			return EBTNodeResult::Failed;
 
 		aiController->MoveToActor(playerCharacter, 0.5f, false, true, true, NULL, false);
-		//aiController->SetTargetReached(false);
-		OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
 
+		OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
 		return EBTNodeResult::Succeeded;
 	}
 

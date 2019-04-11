@@ -29,7 +29,6 @@ void ASoftDesignTrainingCharacter::BeginPlay()
 	if (ASDTBaseAIController* aiController = Cast<ASDTBaseAIController>(GetController()))
 	{
 		aiController->GetBlackBoardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), true);
-		aiController->GetBlackBoardComponent()->SetValue<UBlackboardKeyType_String>(aiController->GetStateBBKeyID(), "Collect");
 		aiController->StartBehaviorTree(this);
 	}
 }
