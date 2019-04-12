@@ -44,6 +44,9 @@ void ASDTAIController::GoToBestTarget(float deltaTime)
 
 void ASDTAIController::MoveToRandomCollectible()
 {
+	// CPU Usage time: Collectible
+	double startTime = FPlatformTime::Seconds();
+
     float closestSqrCollectibleDistance = 18446744073709551610.f;
     ASDTCollectible* closestCollectible = nullptr;
 
@@ -55,13 +58,26 @@ void ASDTAIController::MoveToRandomCollectible()
         int index = FMath::RandRange(0, foundCollectibles.Num() - 1);
 
         ASDTCollectible* collectibleActor = Cast<ASDTCollectible>(foundCollectibles[index]);
-        if (!collectibleActor)
-            return;
+		if (!collectibleActor)
+		{
+			double timeTaken = FPlatformTime::Seconds() - startTime;
+
+			// Show CPU Usage time: Collectible for 5 seconds
+			DrawDebugString(GetWorld(), FVector(0.f, 0.f, 6.f), "MoveToRandomCollectible(): " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, .5f, false);
+
+			return;
+		}
 
         if (!collectibleActor->IsOnCooldown())
         {
             MoveToLocation(foundCollectibles[index]->GetActorLocation(), 0.5f, false, true, true, NULL, false);
             OnMoveToTarget();
+
+			double timeTaken = FPlatformTime::Seconds() - startTime;
+
+			// Show CPU Usage time: Collectible for 5 seconds
+			DrawDebugString(GetWorld(), FVector(0.f, 0.f, 6.f), "MoveToRandomCollectible(): " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, .5f, false);
+
             return;
         }
         else
@@ -69,6 +85,11 @@ void ASDTAIController::MoveToRandomCollectible()
             foundCollectibles.RemoveAt(index);
         }
     }
+
+	double timeTaken = FPlatformTime::Seconds() - startTime;
+
+	// Show CPU Usage time: Collectible for 5 seconds
+	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 6.f), "MoveToRandomCollectible(): " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, .5f, false);
 }
 
 void ASDTAIController::MoveToPlayer()
@@ -408,7 +429,7 @@ bool ASDTAIController::IsPlayerSeen() {
 		double timeTaken = FPlatformTime::Seconds() - startTime;
 
 		// Show CPU Usage time: Detection for 5 seconds
-		DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "IsPlayerSeen(): " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, .5f, false);
+		DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "IsPlayerSeen(): " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Red, .5f, false);
 
 		return true;
 	}
@@ -416,7 +437,7 @@ bool ASDTAIController::IsPlayerSeen() {
 	double timeTaken = FPlatformTime::Seconds() - startTime;
 
 	// Show CPU Usage time: Detection for 5 seconds
-	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "IsPlayerSeen(): " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Orange, .5f, false);
+	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "IsPlayerSeen(): " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Red, .5f, false);
 
 	return false;
 }
