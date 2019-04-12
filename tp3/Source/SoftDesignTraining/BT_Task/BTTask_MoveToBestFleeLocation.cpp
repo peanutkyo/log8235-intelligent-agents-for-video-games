@@ -8,6 +8,7 @@
 #include "SDTFleeLocation.h"
 #include "EngineUtils.h"
 #include "DrawDebugHelpers.h"
+#include "TimeSplicer.h"
 
 #include "BTTask_MoveToBestFleeLocation.h"
 
@@ -21,6 +22,10 @@ EBTNodeResult::Type UBTTask_MoveToBestFleeLocation::ExecuteTask(UBehaviorTreeCom
 
 	if (const UBlackboardComponent* MyBlackboard = OwnerComp.GetBlackboardComponent()) {
 		if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
+			// Check if you can execute on this frame
+			auto& timeSplicerSingleton = TimeSplicer::instance();
+			if (!timeSplicerSingleton.canExecute(aiController->lastUpdateFrame)) EBTNodeResult::Failed;
+
 			float bestLocationScore = 0.f;
 			ASDTFleeLocation* bestFleeLocation = nullptr;
 

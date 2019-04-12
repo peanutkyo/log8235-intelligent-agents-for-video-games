@@ -9,6 +9,7 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_String.h"
 #include "SDTUtils.h"
 #include "DrawDebugHelpers.h"
+#include "TimeSplicer.h"
 
 #include "BTTask_IsPlayerSeen.h"
 
@@ -17,10 +18,15 @@
 
 EBTNodeResult::Type UBTTask_IsPlayerSeen::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	//auto& timeSplicerSingleton = TimeSplicer::instance();
 	// CPU Usage time: Detection
 	double startTime = FPlatformTime::Seconds();
 
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
+		// Check if you can execute on this frame
+		auto& timeSplicerSingleton = TimeSplicer::instance();
+		if (!timeSplicerSingleton.canExecute(aiController->lastUpdateFrame)) return EBTNodeResult::Failed;
+
 		//finish jump before updating AI state
 		if (aiController->AtJumpSegment)
 		{

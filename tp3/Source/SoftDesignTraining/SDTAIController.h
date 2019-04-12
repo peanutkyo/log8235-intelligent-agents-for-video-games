@@ -76,6 +76,9 @@ public:
 	bool IsPlayerSeen();
 	void MoveTo(FVector location);
 
+	// TimeSplicer
+	uint64 lastUpdateFrame;
+
 private:
     virtual void GoToBestTarget(float deltaTime) override;
     virtual void UpdatePlayerInteraction(float deltaTime) override;

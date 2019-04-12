@@ -10,6 +10,7 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_String.h"
 #include "AI/Navigation/NavigationSystem.h"
 #include "DrawDebugHelpers.h"
+#include "TimeSplicer.h"
 
 #include "BTTask_MoveToRandomCollectible.h"
 
@@ -22,6 +23,10 @@ EBTNodeResult::Type UBTTask_MoveToRandomCollectible::ExecuteTask(UBehaviorTreeCo
 	double startTime = FPlatformTime::Seconds();
 
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
+		// Check if you can execute on this frame
+		auto& timeSplicerSingleton = TimeSplicer::instance();
+		if (!timeSplicerSingleton.canExecute(aiController->lastUpdateFrame)) return EBTNodeResult::Failed;
+
 		if (OwnerComp.GetBlackboardComponent()->GetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID())) {
 			float closestSqrCollectibleDistance = 18446744073709551610.f;
 			ASDTCollectible* closestCollectible = nullptr;
