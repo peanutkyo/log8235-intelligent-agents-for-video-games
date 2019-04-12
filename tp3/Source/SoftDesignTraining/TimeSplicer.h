@@ -10,7 +10,7 @@ public:
 	TimeSplicer& operator=(const TimeSplicer&) = delete;
 	TimeSplicer& operator=(TimeSplicer&&) = delete;
 
-	void increaseCount();
+	void increaseAiCount();
 	bool canExecute(uint64&);
 
 private:

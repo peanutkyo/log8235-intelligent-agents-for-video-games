@@ -17,11 +17,11 @@ TimeSplicer& TimeSplicer::instance()
 	return INSTANCE;
 }
 
-void TimeSplicer::increaseCount()
+void TimeSplicer::increaseAiCount()
 {
 	aiCount++;
 
-	deltaExecuteTime = (int)ceil(aiCount / budgetPerFrame);
+	deltaExecuteTime = (int) ceil(aiCount / budgetPerFrame);
 
 	UE_LOG(LogTemp, Display, TEXT("execute every: %i"), deltaExecuteTime)
 }

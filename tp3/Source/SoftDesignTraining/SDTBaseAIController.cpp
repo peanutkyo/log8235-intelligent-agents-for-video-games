@@ -20,7 +20,7 @@ ASDTBaseAIController::ASDTBaseAIController(const FObjectInitializer& ObjectIniti
 
 	// TimeSplicer
 	auto& timeSplicerSingleton = TimeSplicer::instance();
-	timeSplicerSingleton.increaseCount();
+	timeSplicerSingleton.increaseAiCount();
 }
 
 void ASDTBaseAIController::Tick(float deltaTime)

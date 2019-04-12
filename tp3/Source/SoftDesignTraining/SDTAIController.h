@@ -77,7 +77,7 @@ public:
 	void MoveTo(FVector location);
 
 	// TimeSplicer
-	uint64 lastUpdateFrame;
+	uint64 lastUpdateFrame = 0;
 
 private:
     virtual void GoToBestTarget(float deltaTime) override;
