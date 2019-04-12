@@ -7,6 +7,7 @@
 #include "SDTAIController.h"
 #include "SDTFleeLocation.h"
 #include "EngineUtils.h"
+#include "DrawDebugHelpers.h"
 
 #include "BTTask_MoveToBestFleeLocation.h"
 
@@ -15,6 +16,9 @@
 
 EBTNodeResult::Type UBTTask_MoveToBestFleeLocation::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	// CPU Usage time: Flee
+	double startTime = FPlatformTime::Seconds();
+
 	if (const UBlackboardComponent* MyBlackboard = OwnerComp.GetBlackboardComponent()) {
 		if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
 			float bestLocationScore = 0.f;
@@ -22,11 +26,15 @@ EBTNodeResult::Type UBTTask_MoveToBestFleeLocation::ExecuteTask(UBehaviorTreeCom
 
 			ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 			if (!playerCharacter)
+			{
 				return EBTNodeResult::Failed;
+			}
 
 			APawn* selfPawn = aiController->GetPawn();
 			if (!selfPawn)
+			{
 				return EBTNodeResult::Failed;
+			}
 
 			for (TActorIterator<ASDTFleeLocation> actorIterator(GetWorld(), ASDTFleeLocation::StaticClass()); actorIterator; ++actorIterator)
 			{
@@ -59,6 +67,12 @@ EBTNodeResult::Type UBTTask_MoveToBestFleeLocation::ExecuteTask(UBehaviorTreeCom
 				aiController->MoveToLocation(bestFleeLocation->GetActorLocation(), 0.5f, false, true, false, NULL, false);
 
 				OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
+
+				double timeTaken = FPlatformTime::Seconds() - startTime;
+
+				// Show CPU Usage time : Flee for 5 seconds
+				DrawDebugString(GetWorld(), FVector(0.f, 0.f, 7.f), "flee: " + FString::SanitizeFloat(timeTaken) + "s", aiController->GetPawn(), FColor::Purple, .5f, false);
+
 				return EBTNodeResult::Succeeded;
 			}
 		}

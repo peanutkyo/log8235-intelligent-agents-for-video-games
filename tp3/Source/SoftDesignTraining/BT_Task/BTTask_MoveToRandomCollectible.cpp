@@ -9,6 +9,7 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_String.h"
 #include "AI/Navigation/NavigationSystem.h"
+#include "DrawDebugHelpers.h"
 
 #include "BTTask_MoveToRandomCollectible.h"
 
@@ -17,6 +18,9 @@
 
 EBTNodeResult::Type UBTTask_MoveToRandomCollectible::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	// CPU Usage time: Collectible
+	double startTime = FPlatformTime::Seconds();
+
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
 		if (OwnerComp.GetBlackboardComponent()->GetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID())) {
 			float closestSqrCollectibleDistance = 18446744073709551610.f;
@@ -30,14 +34,22 @@ EBTNodeResult::Type UBTTask_MoveToRandomCollectible::ExecuteTask(UBehaviorTreeCo
 				int index = FMath::RandRange(0, foundCollectibles.Num() - 1);
 
 				ASDTCollectible* collectibleActor = Cast<ASDTCollectible>(foundCollectibles[index]);
-				if (!collectibleActor)
+				if (!collectibleActor) 
+				{
 					return EBTNodeResult::Failed;
+				}
 
 				if (!collectibleActor->IsOnCooldown())
 				{
 					aiController->MoveToLocation(foundCollectibles[index]->GetActorLocation(), 0.5f, false, true, true, NULL, false);
 
 					OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
+
+					double timeTaken = FPlatformTime::Seconds() - startTime;
+
+					// Show CPU Usage time: Collectible for 5 seconds
+					DrawDebugString(GetWorld(), FVector(0.f, 0.f, 6.f), "collect: " + FString::SanitizeFloat(timeTaken) + "s", aiController->GetPawn(), FColor::Orange, .5f, false);
+
 					return EBTNodeResult::Succeeded;
 				}
 				else

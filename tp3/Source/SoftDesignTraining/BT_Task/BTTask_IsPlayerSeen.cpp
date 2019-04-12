@@ -8,6 +8,7 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_String.h"
 #include "SDTUtils.h"
+#include "DrawDebugHelpers.h"
 
 #include "BTTask_IsPlayerSeen.h"
 
@@ -16,18 +17,27 @@
 
 EBTNodeResult::Type UBTTask_IsPlayerSeen::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	// CPU Usage time: Detection
+	double startTime = FPlatformTime::Seconds();
+
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
 		//finish jump before updating AI state
 		if (aiController->AtJumpSegment)
+		{
 			return EBTNodeResult::Failed;
+		}
 
 		APawn* selfPawn = aiController->GetPawn();
 		if (!selfPawn)
+		{
 			return EBTNodeResult::Failed;
+		}
 
 		ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 		if (!playerCharacter)
+		{
 			return EBTNodeResult::Failed;
+		}
 
 		FVector detectionStartLocation = selfPawn->GetActorLocation() + selfPawn->GetActorForwardVector() * aiController->m_DetectionCapsuleForwardStartingOffset;
 		FVector detectionEndLocation = detectionStartLocation + selfPawn->GetActorForwardVector() * aiController->m_DetectionCapsuleHalfLength * 2;
@@ -45,6 +55,11 @@ EBTNodeResult::Type UBTTask_IsPlayerSeen::ExecuteTask(UBehaviorTreeComponent& Ow
 				if (component && component->GetCollisionObjectType() == COLLISION_PLAYER)
 				{
 					OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), true);
+
+					double timeTaken = FPlatformTime::Seconds() - startTime;
+
+					// Show CPU Usage time: Detection for 5 seconds
+					DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "player: " + FString::SanitizeFloat(timeTaken) + "s", aiController->GetPawn(), FColor::Green, .5f, false);
 
 					return EBTNodeResult::Succeeded;
 				}
