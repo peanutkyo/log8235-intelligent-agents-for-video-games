@@ -138,6 +138,9 @@ void ASDTAIController::OnPlayerInteractionNoLosDone()
 
 void ASDTAIController::MoveToBestFleeLocation()
 {
+	// CPU Usage time: Flee
+	double startTime = FPlatformTime::Seconds();
+
     float bestLocationScore = 0.f;
     ASDTFleeLocation* bestFleeLocation = nullptr;
 
@@ -176,6 +179,11 @@ void ASDTAIController::MoveToBestFleeLocation()
         MoveToLocation(bestFleeLocation->GetActorLocation(), 0.5f, false, true, false, NULL, false);
         OnMoveToTarget();
     }
+
+	double timeTaken = FPlatformTime::Seconds() - startTime;
+
+	// Show CPU Usage time : Flee for 5 seconds
+	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 7.f), "MoveToBestFleeLocation(): " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Purple, .5f, false);
 }
 
 void ASDTAIController::OnMoveToTarget()
