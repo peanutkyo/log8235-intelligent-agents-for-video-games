@@ -25,7 +25,7 @@ EBTNodeResult::Type UBTTask_MoveToRandomCollectible::ExecuteTask(UBehaviorTreeCo
 
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
 		// Check if you can execute on this frame
-		if (!(aiController->timeSplicer->canExecute(aiController->lastUpdateFrame))) return EBTNodeResult::Failed;
+		//if (!(aiController->timeSplicer->canExecute(aiController->lastUpdateFrame))) return EBTNodeResult::Failed;
 
 		if (OwnerComp.GetBlackboardComponent()->GetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID())) {
 			float closestSqrCollectibleDistance = 18446744073709551610.f;

@@ -19,7 +19,7 @@ EBTNodeResult::Type UBTTask_MoveToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 {
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
 		// Check if you can execute on this frame
-		if ( !(aiController->timeSplicer->canExecute(aiController->lastUpdateFrame)) ) return EBTNodeResult::Failed;
+		//if ( !(aiController->timeSplicer->canExecute(aiController->lastUpdateFrame)) ) return EBTNodeResult::Failed;
 
 		ACharacter * playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 		if (!playerCharacter)
