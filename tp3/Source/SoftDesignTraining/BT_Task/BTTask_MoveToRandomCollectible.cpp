@@ -11,6 +11,7 @@
 #include "AI/Navigation/NavigationSystem.h"
 #include "DrawDebugHelpers.h"
 #include "TimeSplicer.h"
+#include "Engine.h"
 
 #include "BTTask_MoveToRandomCollectible.h"
 

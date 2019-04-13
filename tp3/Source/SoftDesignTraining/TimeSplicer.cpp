@@ -1,5 +1,6 @@
 #include "SoftDesignTraining.h"
 #include "TimeSplicer.h"
+#include "Engine.h"
 
 TimeSplicer::TimeSplicer()
 {
