@@ -72,7 +72,7 @@ EBTNodeResult::Type UBTTask_MoveToBestFleeLocation::ExecuteTask(UBehaviorTreeCom
 
 				double timeTaken = FPlatformTime::Seconds() - startTime;
 
-				// Show CPU Usage time: Detection for 5 seconds
+				// Show CPU Usage time: Flee for 5 seconds
 				DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "flee: " + FString::SanitizeFloat(timeTaken) + "s", aiController->GetPawn(), FColor::Purple, .5f, false);
 
 				return EBTNodeResult::Succeeded;
