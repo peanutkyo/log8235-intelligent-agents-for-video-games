@@ -4,7 +4,7 @@
 
 TimeSplicer::TimeSplicer()
 {
-	budgetPerFrame = TOTAL_BUDGET / AVG_EXEC_TIME;
+	budgetPerFrame = TOTAL_BUDGET / MAX_EXEC_TIME;
 }
 
 void TimeSplicer::increaseAiCount()

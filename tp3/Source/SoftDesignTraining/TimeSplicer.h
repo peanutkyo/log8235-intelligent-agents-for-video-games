@@ -10,8 +10,8 @@ public:
 	bool canExecute(uint64&);
 
 private:
-	const double TOTAL_BUDGET = (3.f / 4) * 30; // we're only using half the time corresponding to 30 FPS
-	const double AVG_EXEC_TIME = TOTAL_BUDGET / 2.0; // average execution time should be around half of the previous value
+	const double TOTAL_BUDGET = 1.0 / 30.0 / 5.0; // converts 30 fps into seconds and only uses a fifth of it
+	const double MAX_EXEC_TIME = 0.003;
 	double budgetPerFrame;
 	int deltaExecuteTime;
 	int aiCount = 0;
