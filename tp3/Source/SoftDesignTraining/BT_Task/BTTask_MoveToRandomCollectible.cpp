@@ -51,7 +51,7 @@ EBTNodeResult::Type UBTTask_MoveToRandomCollectible::ExecuteTask(UBehaviorTreeCo
 
 					double timeTaken = FPlatformTime::Seconds() - startTime;
 
-					// Show CPU Usage time: Detection for 5 seconds
+					// Show CPU Usage time: Collectible for 5 seconds
 					DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "collectible: " + FString::SanitizeFloat(timeTaken) + "s", aiController->GetPawn(), FColor::Orange, .5f, false);
 
 					return EBTNodeResult::Succeeded;
