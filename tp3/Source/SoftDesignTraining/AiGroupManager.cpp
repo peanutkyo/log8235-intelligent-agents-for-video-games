@@ -21,6 +21,7 @@ void AAiGroupManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	DrawChasePoints();
+	DisplayGroupMember();
 }
 
 void AAiGroupManager::ClearChasePoints()
@@ -76,5 +77,14 @@ void AAiGroupManager::DrawChasePoints()
 	{
 		DrawDebugSphere(GetWorld(), m_target->GetActorLocation() + m_chasePoints[i], 15.0f, 100, FColor::Red);
 	}
+}
+
+void AAiGroupManager::DisplayGroupMember()
+{
+	for (int i = 0; i < m_aiActors.Num(); i++)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, FString::FString(m_aiActors[i]->GetName()));
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, FString::FString("Membre du groupe de poursuite :"));
 }
 

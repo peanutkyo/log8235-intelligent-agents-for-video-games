@@ -19,6 +19,7 @@ public:
 	void AddAIActorToGroup(ASDTBaseAIController* aiActor);
 	void RemoveAIActorFromGroup(ASDTBaseAIController* aiActor);
 	void DrawChasePoints();
+	void DisplayGroupMember();
 
 protected:
 	virtual void BeginPlay() override;
