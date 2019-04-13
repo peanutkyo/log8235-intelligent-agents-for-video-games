@@ -20,7 +20,7 @@
 
 EBTNodeResult::Type UBTTask_MoveToRandomCollectible::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// CPU Usage time: Detection
+	// CPU Usage time: Collectible
 	double startTime = FPlatformTime::Seconds();
 
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
