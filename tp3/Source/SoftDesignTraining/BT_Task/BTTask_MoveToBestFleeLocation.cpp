@@ -17,7 +17,7 @@
 
 EBTNodeResult::Type UBTTask_MoveToBestFleeLocation::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// CPU Usage time: Detection
+	// CPU Usage time: Flee
 	double startTime = FPlatformTime::Seconds();
 
 	if (const UBlackboardComponent* MyBlackboard = OwnerComp.GetBlackboardComponent()) {
