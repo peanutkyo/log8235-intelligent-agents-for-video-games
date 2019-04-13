@@ -19,7 +19,7 @@
 
 EBTNodeResult::Type UBTTask_MoveToRandomCollectible::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// CPU Usage time: Collectible
+	// CPU Usage time: Detection
 	double startTime = FPlatformTime::Seconds();
 
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
@@ -39,8 +39,7 @@ EBTNodeResult::Type UBTTask_MoveToRandomCollectible::ExecuteTask(UBehaviorTreeCo
 				int index = FMath::RandRange(0, foundCollectibles.Num() - 1);
 
 				ASDTCollectible* collectibleActor = Cast<ASDTCollectible>(foundCollectibles[index]);
-				if (!collectibleActor) 
-				{
+				if (!collectibleActor) {
 					return EBTNodeResult::Failed;
 				}
 
@@ -52,8 +51,8 @@ EBTNodeResult::Type UBTTask_MoveToRandomCollectible::ExecuteTask(UBehaviorTreeCo
 
 					double timeTaken = FPlatformTime::Seconds() - startTime;
 
-					// Show CPU Usage time: Collectible for 5 seconds
-					DrawDebugString(GetWorld(), FVector(0.f, 0.f, 6.f), "collect: " + FString::SanitizeFloat(timeTaken) + "s", aiController->GetPawn(), FColor::Orange, .5f, false);
+					// Show CPU Usage time: Detection for 5 seconds
+					DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "player: " + FString::SanitizeFloat(timeTaken) + "s", aiController->GetPawn(), FColor::Green, .5f, false);
 
 					return EBTNodeResult::Succeeded;
 				}

@@ -1,24 +1,37 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SDTAIController.h"
+#include "SDTBaseAIController.h"
+#include "GameFramework/Actor.h"
+#include "AiGroupManager.generated.h"
 
-
-class SOFTDESIGNTRAINING_API AiGroupManager
+UCLASS()
+class SOFTDESIGNTRAINING_API AAiGroupManager : public AActor
 {
-
-public:
-	AiGroupManager();
+	GENERATED_BODY()
+	
+public:	
+	AAiGroupManager();
 	void ClearChasePoints();
 	void UpdateChasePoints();
-	void AddAIActorToGroup(ASDTAIController* aiActor);
-	void RemoveAIActorFromGroup(ASDTAIController* aiActor);
+	void AddAIActorToGroup(ASDTBaseAIController* aiActor);
+	void RemoveAIActorFromGroup(ASDTBaseAIController* aiActor);
+	void DrawChasePoints();
+
+protected:
+	virtual void BeginPlay() override;
+
+public:	
+	virtual void Tick(float DeltaTime) override;
 
 private:
 	void AssignChasePointsToAiActors();
 
-	float m_radius = 500.f;
+	float m_radius = 250;
 	ACharacter* m_target;
-	TArray<ASDTAIController*> m_aiActors;
+	TArray<ASDTBaseAIController*> m_aiActors;
 	TArray<FVector> m_chasePoints;
+	
 };

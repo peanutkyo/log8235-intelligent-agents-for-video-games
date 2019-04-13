@@ -18,6 +18,15 @@ ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     m_PlayerInteractionBehavior = PlayerInteractionBehavior_Collect;
 }
 
+void ASDTAIController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	TArray<AActor*> list;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAiGroupManager::StaticClass(), list);
+	m_AiGroupManager = Cast<AAiGroupManager>(list[0]);
+}
+
 void ASDTAIController::GoToBestTarget(float deltaTime)
 {
     switch (m_PlayerInteractionBehavior)
@@ -55,16 +64,13 @@ void ASDTAIController::MoveToRandomCollectible()
         int index = FMath::RandRange(0, foundCollectibles.Num() - 1);
 
         ASDTCollectible* collectibleActor = Cast<ASDTCollectible>(foundCollectibles[index]);
-		if (!collectibleActor)
-		{
-			return;
-		}
+        if (!collectibleActor)
+            return;
 
         if (!collectibleActor->IsOnCooldown())
         {
             MoveToLocation(foundCollectibles[index]->GetActorLocation(), 0.5f, false, true, true, NULL, false);
             OnMoveToTarget();
-
             return;
         }
         else
@@ -141,9 +147,6 @@ void ASDTAIController::OnPlayerInteractionNoLosDone()
 
 void ASDTAIController::MoveToBestFleeLocation()
 {
-	// CPU Usage time: Flee
-	double startTime = FPlatformTime::Seconds();
-
     float bestLocationScore = 0.f;
     ASDTFleeLocation* bestFleeLocation = nullptr;
 
@@ -182,11 +185,6 @@ void ASDTAIController::MoveToBestFleeLocation()
         MoveToLocation(bestFleeLocation->GetActorLocation(), 0.5f, false, true, false, NULL, false);
         OnMoveToTarget();
     }
-
-	double timeTaken = FPlatformTime::Seconds() - startTime;
-
-	// Show CPU Usage time : Flee for 5 seconds
-	DrawDebugString(GetWorld(), FVector(0.f, 0.f, 7.f), "MoveToBestFleeLocation(): " + FString::SanitizeFloat(timeTaken) + "s", GetPawn(), FColor::Purple, .5f, false);
 }
 
 void ASDTAIController::OnMoveToTarget()

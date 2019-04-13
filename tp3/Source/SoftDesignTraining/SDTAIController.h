@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SDTBaseAIController.h"
+#include "AIGroupManager.h"
 #include "SDTAIController.generated.h"
 
 /**
@@ -61,6 +62,8 @@ protected:
     void OnPlayerInteractionNoLosDone();
     void OnMoveToTarget();
 
+	virtual void BeginPlay() override;
+
 public:
     virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
     void RotateTowards(const FVector& targetLocation);
@@ -84,10 +87,10 @@ private:
     virtual void UpdatePlayerInteraction(float deltaTime) override;
     virtual void ShowNavigationPath() override;
 
-
 protected:
     FVector m_JumpTarget;
     FRotator m_ObstacleAvoidanceRotation;
     FTimerHandle m_PlayerInteractionNoLosTimer;
     PlayerInteractionBehavior m_PlayerInteractionBehavior;
+	AAiGroupManager* m_AiGroupManager;
 };

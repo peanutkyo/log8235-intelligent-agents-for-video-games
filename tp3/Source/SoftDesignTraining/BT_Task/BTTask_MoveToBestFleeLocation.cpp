@@ -17,27 +17,25 @@
 
 EBTNodeResult::Type UBTTask_MoveToBestFleeLocation::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// CPU Usage time: Flee
+	// CPU Usage time: Detection
 	double startTime = FPlatformTime::Seconds();
 
 	if (const UBlackboardComponent* MyBlackboard = OwnerComp.GetBlackboardComponent()) {
 		if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
 			// Check if you can execute on this frame
 			auto& timeSplicerSingleton = TimeSplicer::instance();
-			if (!timeSplicerSingleton.canExecute(aiController->lastUpdateFrame)) EBTNodeResult::Failed;
+			if (!timeSplicerSingleton.canExecute(aiController->lastUpdateFrame)) return EBTNodeResult::Failed;
 
 			float bestLocationScore = 0.f;
 			ASDTFleeLocation* bestFleeLocation = nullptr;
 
 			ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-			if (!playerCharacter)
-			{
+			if (!playerCharacter) {
 				return EBTNodeResult::Failed;
 			}
 
 			APawn* selfPawn = aiController->GetPawn();
-			if (!selfPawn)
-			{
+			if (!selfPawn) {
 				return EBTNodeResult::Failed;
 			}
 
@@ -75,8 +73,8 @@ EBTNodeResult::Type UBTTask_MoveToBestFleeLocation::ExecuteTask(UBehaviorTreeCom
 
 				double timeTaken = FPlatformTime::Seconds() - startTime;
 
-				// Show CPU Usage time : Flee for 5 seconds
-				DrawDebugString(GetWorld(), FVector(0.f, 0.f, 7.f), "flee: " + FString::SanitizeFloat(timeTaken) + "s", aiController->GetPawn(), FColor::Purple, .5f, false);
+				// Show CPU Usage time: Detection for 5 seconds
+				DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "player: " + FString::SanitizeFloat(timeTaken) + "s", aiController->GetPawn(), FColor::Green, .5f, false);
 
 				return EBTNodeResult::Succeeded;
 			}

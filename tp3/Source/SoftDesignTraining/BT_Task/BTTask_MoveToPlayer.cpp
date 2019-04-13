@@ -7,6 +7,7 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "AI/Navigation/NavigationSystem.h"
+#include "Engine.h"
 
 #include "BTTask_MoveToPlayer.h"
 
@@ -20,7 +21,12 @@ EBTNodeResult::Type UBTTask_MoveToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 		if (!playerCharacter)
 			return EBTNodeResult::Failed;
 
-		aiController->MoveToLocation(playerCharacter->GetTargetLocation(), 0.5f, false, true, true, NULL, false);
+		if ((aiController->GetPawn()->GetActorLocation() - playerCharacter->GetActorLocation()).Size() < 260) {
+			aiController->MoveToLocation(playerCharacter->GetActorLocation(), 0.5f, false, true, true, NULL, false);
+		}
+		else {
+			aiController->MoveToLocation(playerCharacter->GetActorLocation() + aiController->GetChasePoint(), 0.5f, false, true, true, NULL, false);
+		}
 
 		OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), false);
 		return EBTNodeResult::Succeeded;

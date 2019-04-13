@@ -76,6 +76,7 @@ void ASDTBaseAIController::Possess(APawn* pawn)
 			m_blackboardComponent->InitializeBlackboard(*aiBaseCharacter->GetBehaviorTree()->BlackboardAsset);
 
 			m_reachedTargetBBKeyID = m_blackboardComponent->GetKeyID("ReachedTarget");
+			m_lostPlayerSightBBKeyID = m_blackboardComponent->GetKeyID("LostPlayerSight");
 
 			//Set this agent in the BT
 			m_blackboardComponent->SetValue<UBlackboardKeyType_Object>(m_blackboardComponent->GetKeyID("SelfActor"), pawn);

@@ -27,9 +27,13 @@ public:
 	UBlackboardComponent*   GetBlackBoardComponent() const { return m_blackboardComponent; }
 
 	uint8                   GetReachedTargetKeyID() const { return m_reachedTargetBBKeyID; }
+	uint8                   GetLostPlayerSightKeyID() const { return m_lostPlayerSightBBKeyID; }
 
 	void                    StartBehaviorTree(APawn* pawn);
 	void                    StopBehaviorTree(APawn* pawn);
+
+	void SetChasePoint(FVector chasePoint) { m_chasePoint = chasePoint; }
+	FVector GetChasePoint() { return m_chasePoint; }
 	
 protected:
     virtual void RotationUpdate(float deltaTime) {};
@@ -54,4 +58,7 @@ private:
 
 
 	uint8   m_reachedTargetBBKeyID;
+	uint8   m_lostPlayerSightBBKeyID;
+
+	FVector m_chasePoint;
 };

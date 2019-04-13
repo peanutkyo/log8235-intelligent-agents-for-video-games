@@ -10,6 +10,7 @@
 #include "SDTUtils.h"
 #include "DrawDebugHelpers.h"
 #include "TimeSplicer.h"
+#include "AiGroupManager.h"
 
 #include "BTTask_IsPlayerSeen.h"
 
@@ -18,7 +19,6 @@
 
 EBTNodeResult::Type UBTTask_IsPlayerSeen::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	//auto& timeSplicerSingleton = TimeSplicer::instance();
 	// CPU Usage time: Detection
 	double startTime = FPlatformTime::Seconds();
 
@@ -28,20 +28,17 @@ EBTNodeResult::Type UBTTask_IsPlayerSeen::ExecuteTask(UBehaviorTreeComponent& Ow
 		if (!timeSplicerSingleton.canExecute(aiController->lastUpdateFrame)) return EBTNodeResult::Failed;
 
 		//finish jump before updating AI state
-		if (aiController->AtJumpSegment)
-		{
+		if (aiController->AtJumpSegment) {
 			return EBTNodeResult::Failed;
 		}
 
 		APawn* selfPawn = aiController->GetPawn();
-		if (!selfPawn)
-		{
+		if (!selfPawn) {
 			return EBTNodeResult::Failed;
 		}
 
 		ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-		if (!playerCharacter)
-		{
+		if (!playerCharacter) {
 			return EBTNodeResult::Failed;
 		}
 
@@ -62,14 +59,32 @@ EBTNodeResult::Type UBTTask_IsPlayerSeen::ExecuteTask(UBehaviorTreeComponent& Ow
 				{
 					OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetReachedTargetKeyID(), true);
 
-					double timeTaken = FPlatformTime::Seconds() - startTime;
+					if (OwnerComp.GetBlackboardComponent()->GetValue<UBlackboardKeyType_Bool>(aiController->GetLostPlayerSightKeyID())) {
+						TArray<AActor*> list;
+						UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAiGroupManager::StaticClass(), list);
+						AAiGroupManager* aiGroupManager = Cast<AAiGroupManager>(list[0]);
+						aiGroupManager->AddAIActorToGroup(aiController);
 
+						OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetLostPlayerSightKeyID(), false);
+					}
+
+					double timeTaken = FPlatformTime::Seconds() - startTime;
+					
 					// Show CPU Usage time: Detection for 5 seconds
 					DrawDebugString(GetWorld(), FVector(0.f, 0.f, 8.f), "player: " + FString::SanitizeFloat(timeTaken) + "s", aiController->GetPawn(), FColor::Green, .5f, false);
 
 					return EBTNodeResult::Succeeded;
 				}
 			}
+		}
+
+		if (!OwnerComp.GetBlackboardComponent()->GetValue<UBlackboardKeyType_Bool>(aiController->GetLostPlayerSightKeyID())) {
+			TArray<AActor*> list;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAiGroupManager::StaticClass(), list);
+			AAiGroupManager* aiGroupManager = Cast<AAiGroupManager>(list[0]);
+			aiGroupManager->RemoveAIActorFromGroup(aiController);
+
+			OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Bool>(aiController->GetLostPlayerSightKeyID(), true);
 		}
 	}
 

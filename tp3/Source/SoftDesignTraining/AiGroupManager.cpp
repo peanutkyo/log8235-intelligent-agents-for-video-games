@@ -1,47 +1,80 @@
 #include "SoftDesignTraining.h"
 #include "AiGroupManager.h"
+#include "DrawDebugHelpers.h"
 #include <cmath>
+#include "Engine.h"
 
 
-AiGroupManager::AiGroupManager()
+AAiGroupManager::AAiGroupManager()
 {
+	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AiGroupManager::ClearChasePoints()
+void AAiGroupManager::BeginPlay()
+{
+	Super::BeginPlay();
+
+	m_target = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+}
+
+void AAiGroupManager::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	DrawChasePoints();
+}
+
+void AAiGroupManager::ClearChasePoints()
 {
 	m_chasePoints.Empty();
 }
 
-void AiGroupManager::UpdateChasePoints()
+void AAiGroupManager::UpdateChasePoints()
 {
-	for (int i = 0; i < m_aiActors.Num(); i++) {
-		float currentAngle = (i * 360.f) / m_aiActors.Num();
-		float x = m_radius * cos(currentAngle);
-		float z = m_radius * sin(currentAngle);
-		FVector chasePoint = m_target->GetTargetLocation();
-		FVector offset = FVector(x, chasePoint.Y, z);
+	FVector chasePoint = m_target->GetActorLocation();
+	if (m_aiActors.Num() == 1) {
+		m_chasePoints.Add(FVector(0, 0, 0));
+	}
+	else {
+		for (int i = 0; i < m_aiActors.Num(); i++) {
+			float currentAngle = (i * 2 * PI) / m_aiActors.Num();
+			float x = m_radius * cos(currentAngle);
+			float y = m_radius * sin(currentAngle);
+			FVector offset = FVector(x, y, 0);
 
-		chasePoint += offset;
-		m_chasePoints.Add(chasePoint);
+			//chasePoint += offset;
+			m_chasePoints.Add(offset);
+		}
 	}
 }
 
-void AiGroupManager::AddAIActorToGroup(ASDTAIController* aiActor)
+void AAiGroupManager::AddAIActorToGroup(ASDTBaseAIController* aiActor)
 {
 	m_aiActors.Add(aiActor);
 	ClearChasePoints();
 	UpdateChasePoints();
+	AssignChasePointsToAiActors();
 }
 
-void AiGroupManager::RemoveAIActorFromGroup(ASDTAIController* aiActor)
+void AAiGroupManager::RemoveAIActorFromGroup(ASDTBaseAIController* aiActor)
 {
 	m_aiActors.Remove(aiActor);
+	ClearChasePoints();
+	UpdateChasePoints();
+	AssignChasePointsToAiActors();
 }
 
-void AiGroupManager::AssignChasePointsToAiActors()
+void AAiGroupManager::AssignChasePointsToAiActors()
 {
 	for (int i = 0; i < m_aiActors.Num(); i++) {
-		m_aiActors[i]->MoveTo(m_chasePoints[i]);
+		m_aiActors[i]->SetChasePoint(m_chasePoints[i]);
+	}
+}
+
+void AAiGroupManager::DrawChasePoints()
+{
+	for (int i = 0; i < m_chasePoints.Num(); i++)
+	{
+		DrawDebugSphere(GetWorld(), m_target->GetActorLocation() + m_chasePoints[i], 15.0f, 100, FColor::Red);
 	}
 }
 
