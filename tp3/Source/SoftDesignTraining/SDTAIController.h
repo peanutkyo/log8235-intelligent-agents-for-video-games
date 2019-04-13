@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "SDTBaseAIController.h"
 #include "AIGroupManager.h"
+#include "TimeSplicer.h"
 #include "SDTAIController.generated.h"
 
 /**
@@ -80,7 +81,8 @@ public:
 	void MoveTo(FVector location);
 
 	// TimeSplicer
-	uint64 lastUpdateFrame = 0;
+	TimeSplicer* timeSplicer;
+	uint64 lastUpdateFrame;
 
 private:
     virtual void GoToBestTarget(float deltaTime) override;

@@ -11,6 +11,7 @@
 #include "SDTUtils.h"
 #include "EngineUtils.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
+#include "SoftDesignTrainingGameMode.h"
 
 ASDTAIController::ASDTAIController(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer.SetDefaultSubobjectClass<USDTPathFollowingComponent>(TEXT("PathFollowingComponent")))
@@ -25,6 +26,11 @@ void ASDTAIController::BeginPlay()
 	TArray<AActor*> list;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAiGroupManager::StaticClass(), list);
 	m_AiGroupManager = Cast<AAiGroupManager>(list[0]);
+
+	// TimeSplicer
+	timeSplicer = ((ASoftDesignTrainingGameMode*)GetWorld()->GetAuthGameMode())->timeSplicer;
+
+	timeSplicer->increaseAiCount();
 }
 
 void ASDTAIController::GoToBestTarget(float deltaTime)

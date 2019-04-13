@@ -24,8 +24,7 @@ EBTNodeResult::Type UBTTask_IsPlayerSeen::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	if (ASDTAIController* aiController = Cast<ASDTAIController>(OwnerComp.GetAIOwner())) {
 		// Check if you can execute on this frame
-		auto& timeSplicerSingleton = TimeSplicer::instance();
-		if (!timeSplicerSingleton.canExecute(aiController->lastUpdateFrame)) return EBTNodeResult::Failed;
+		if ( !(aiController->timeSplicer->canExecute(aiController->lastUpdateFrame)) ) return EBTNodeResult::Failed;
 
 		//finish jump before updating AI state
 		if (aiController->AtJumpSegment) {

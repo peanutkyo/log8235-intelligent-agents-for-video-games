@@ -6,17 +6,6 @@ TimeSplicer::TimeSplicer()
 	budgetPerFrame = ALLOWED_TIME / AVERAGE_EXECUTE_TIME;
 }
 
-TimeSplicer::~TimeSplicer() 
-{
-
-}
-
-TimeSplicer& TimeSplicer::instance()
-{
-	static TimeSplicer INSTANCE;
-	return INSTANCE;
-}
-
 void TimeSplicer::increaseAiCount()
 {
 	aiCount++;

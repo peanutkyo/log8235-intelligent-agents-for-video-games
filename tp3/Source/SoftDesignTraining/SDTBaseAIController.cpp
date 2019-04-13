@@ -17,10 +17,6 @@ ASDTBaseAIController::ASDTBaseAIController(const FObjectInitializer& ObjectIniti
 	// BT_AI
 	m_behaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
 	m_blackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
-
-	// TimeSplicer
-	auto& timeSplicerSingleton = TimeSplicer::instance();
-	timeSplicerSingleton.increaseAiCount();
 }
 
 void ASDTBaseAIController::Tick(float deltaTime)

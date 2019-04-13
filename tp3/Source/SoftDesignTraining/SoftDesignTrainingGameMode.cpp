@@ -16,6 +16,8 @@ ASoftDesignTrainingGameMode::ASoftDesignTrainingGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+
+	timeSplicer = new TimeSplicer();
 }
 
 void ASoftDesignTrainingGameMode::StartPlay()
