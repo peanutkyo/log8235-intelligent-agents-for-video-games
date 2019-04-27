@@ -20,7 +20,7 @@ Main goal of this first assignment is implementing simple behaviors for our inte
 Main goal of this second assignment is to improve the behaviours implemented in the first one, using advanced navigation techniques and animation techniques seen in class.
 
 ## Assignment #3 - Predator / Prey V3 (investigation and scaling)
-Main goal of this third assignment is to, again, improve the behaviours implemented in the first and second assignments. Notable changes are implmented this time: 
+Main goal of this third assignment is to, again, improve the behaviours implemented in the first and second assignments. Notable changes are implemented this time: 
 
 (1) Behavior Tree (BT) is used to implement the behaviour of our intelligent agents.
 
